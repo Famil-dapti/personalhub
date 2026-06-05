@@ -29,9 +29,9 @@ Supabase MCP added to `.mcp.json` + authenticated; tools load on next IDE sessio
 - [x] First migration verified: tables created in Supabase via native GitHub integration
 
 ## In Progress
-Phase 1.1 code written + `flutter analyze` clean. NOT yet committed/deployed (deploy = commit
-when all done, per decision). Migration `20260606022924_categories.sql` ready; will auto-push to
-Supabase on commit to dev. After commit, verify presets seeded + app runs against real DB.
+Phase 1.1 committed + pushed to dev (commit 224ebce). Migration `20260606022924_categories.sql`
+deploying to Supabase via native GitHub integration. Next: verify presets seeded + manual test
+(flutter run). MCP tools load on next IDE session restart.
 
 ## Next Task — Phase 1.1: Core Wallet (online-only)
 
