@@ -1,4 +1,4 @@
-name: Deploy to Production
+name: Deploy DB (main branch)
 
 on:
   push:
@@ -8,9 +8,8 @@ on:
 
 jobs:
   deploy-db:
-    name: Push migrations to Production
+    name: Push migrations to Supabase
     runs-on: ubuntu-latest
-    environment: production
 
     steps:
       - uses: actions/checkout@v4
