@@ -6,6 +6,9 @@ import '../widgets/app_shell.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/signup_screen.dart';
 import '../../features/wallet/presentation/screens/wallet_screen.dart';
+import '../../features/wallet/presentation/screens/add_transaction_screen.dart';
+import '../../features/wallet/presentation/screens/manage_categories_screen.dart';
+import '../../features/wallet/presentation/screens/wallet_dashboard_screen.dart';
 import '../../features/notifications/presentation/screens/notifications_screen.dart';
 import '../../features/media_cleaner/presentation/screens/media_cleaner_screen.dart';
 
@@ -40,6 +43,22 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/wallet',
                 builder: (context, state) => const WalletScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'add',
+                    builder: (context, state) => const AddTransactionScreen(),
+                  ),
+                  GoRoute(
+                    path: 'categories',
+                    builder: (context, state) =>
+                        const ManageCategoriesScreen(),
+                  ),
+                  GoRoute(
+                    path: 'dashboard',
+                    builder: (context, state) =>
+                        const WalletDashboardScreen(),
+                  ),
+                ],
               ),
             ],
           ),

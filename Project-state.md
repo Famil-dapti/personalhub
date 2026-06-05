@@ -1,11 +1,13 @@
 # Project-state.md
 
 ## Current Phase
-**Phase 1 — Wallet App** (not started)
+**Phase 1.1 — Core Wallet (online-only)** (planning done, build not started)
 
 ## Status
 Phase 0 complete. Flutter shell + auth + CI/CD fully wired. Supabase credentials in place.
-Phase 0 fully complete. Starting Phase 1 — Wallet App. MCP setup pending (next session).
+Phase 1.1 design decided (see decisions log). Single currency AZN; categories table with
+system presets; online-only. Offline queue deferred to Phase 1.2 (separate session).
+Supabase MCP added to `.mcp.json` + authenticated; tools load on next IDE session restart.
 
 ## Completed
 - [x] Architecture decision: Flutter + Supabase + Riverpod + go_router
@@ -27,18 +29,27 @@ Phase 0 fully complete. Starting Phase 1 — Wallet App. MCP setup pending (next
 - [x] First migration verified: tables created in Supabase via native GitHub integration
 
 ## In Progress
-Nothing.
+Phase 1.1 code written + `flutter analyze` clean. NOT yet committed/deployed (deploy = commit
+when all done, per decision). Migration `20260606022924_categories.sql` ready; will auto-push to
+Supabase on commit to dev. After commit, verify presets seeded + app runs against real DB.
 
-## Next Task — Phase 1: Wallet App
+## Next Task — Phase 1.1: Core Wallet (online-only)
 
 Build in this order:
-1. `lib/features/wallet/data/models/transaction_model.dart` — Transaction data class
-2. `lib/features/wallet/data/repositories/transaction_repository.dart` — CRUD via Supabase
-3. `lib/features/wallet/presentation/providers/wallet_provider.dart` — Riverpod AsyncNotifier
-4. `lib/features/wallet/presentation/screens/wallet_screen.dart` — Replace placeholder: balance card + transaction list
-5. `lib/features/wallet/presentation/screens/add_transaction_screen.dart` — Add income/expense form
-6. `lib/features/wallet/presentation/widgets/transaction_tile.dart` — List item widget
-7. `lib/features/wallet/presentation/widgets/balance_card.dart` — Summary card at top
+1. `supabase/migrations/<ts>_categories.sql` — new migration: categories table + RLS +
+   preset system rows; alter transactions: drop `category` text, add `category_id` FK
+2. `lib/features/wallet/data/models/category_model.dart` — Category data class
+3. `lib/features/wallet/data/models/transaction_model.dart` — Transaction data class
+4. `lib/features/wallet/data/repositories/category_repository.dart` — read presets + own, create custom
+5. `lib/features/wallet/data/repositories/transaction_repository.dart` — CRUD via Supabase
+6. `lib/features/wallet/presentation/providers/wallet_provider.dart` — Riverpod AsyncNotifier (transactions)
+7. `lib/features/wallet/presentation/providers/category_provider.dart` — categories AsyncNotifier
+8. `lib/features/wallet/presentation/screens/wallet_screen.dart` — Replace placeholder: balance card + list
+9. `lib/features/wallet/presentation/widgets/balance_card.dart` — AZN balance + monthly summary
+10. `lib/features/wallet/presentation/widgets/transaction_tile.dart` — List item (category icon/color)
+11. `lib/features/wallet/presentation/screens/add_transaction_screen.dart` — income/expense form + category picker
+12. `lib/features/wallet/presentation/screens/manage_categories_screen.dart` — add/list custom categories
+13. Dashboard charts (fl_chart): category pie + monthly trend
 
 ## Known Blockers
 - Flutter PATH must be added to ~/.zshrc manually:
@@ -54,6 +65,10 @@ Build in this order:
 | 2026-06-05 | Media Cleaner mobile-only | Browser cannot access device filesystem |
 | 2026-06-05 | iOS: Wallet read/write only | Both daily phones are Android; iOS is secondary access |
 | 2026-06-06 | Single Supabase project (no staging) | No live data to protect; staging added later when needed |
+| 2026-06-06 | Phase 1.1 single currency (AZN) | Simplest start; multi-currency added later if needed |
+| 2026-06-06 | Categories: separate table, system presets (user_id NULL) | Custom categories + icons/colors; no per-user seeding |
+| 2026-06-06 | Online-only for 1.1; offline queue = Phase 1.2 | Offline sync is high complexity; ship core wallet first |
+| 2026-06-06 | transactions.category text → category_id FK | Relational integrity; no live data so safe to alter |
 
 ## Git Workflow
 - Always work on `dev` branch

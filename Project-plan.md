@@ -26,13 +26,27 @@ A personal "app-in-app" suite accessible from any device (Android phone, second 
 id uuid primary key
 user_id uuid references auth.users
 amount numeric not null        -- positive = income, negative = expense
-currency text default 'AZN'
-category text
+currency text default 'AZN'    -- Phase 1.1: AZN only (single currency)
+category_id uuid references categories on delete set null
 description text
 source text                    -- 'manual' | 'notification'
 notification_id uuid           -- FK to notifications if auto-detected
 created_at timestamptz default now()
 ```
+
+### `categories` table (Phase 1.1)
+```sql
+id uuid primary key
+user_id uuid references auth.users on delete cascade  -- NULL = system preset (shared)
+name text not null
+kind text not null             -- 'income' | 'expense'
+icon text                      -- Material icon identifier
+color text                     -- hex string e.g. '#4CAF50'
+sort_order int default 0
+created_at timestamptz default now()
+```
+RLS: `select` where `user_id is null OR user_id = auth.uid()`; write only own rows.
+Preset categories are seeded as system rows (`user_id IS NULL`) — no per-user seeding needed.
 
 ### `notifications` table
 ```sql
@@ -68,12 +82,24 @@ All tables: RLS enabled, `user_id = auth.uid()` policy.
 - [ ] Theme system, routing
 
 ### Phase 1 — Wallet App
-- [ ] Transaction list view
-- [ ] Add transaction (income/expense) form
-- [ ] Category management
-- [ ] Dashboard: balance, monthly summary, category breakdown
-- [ ] Charts (fl_chart)
-- [ ] Supabase sync + offline queue
+
+**Phase 1.1 — Core Wallet (online-only)** ← current
+- [ ] `categories` table migration + preset seed (system rows)
+- [ ] Transaction + Category models
+- [ ] Repositories: transactions CRUD, categories read/create
+- [ ] Riverpod providers (AsyncNotifier)
+- [ ] Wallet screen: balance card + transaction list
+- [ ] Add transaction form (income/expense, category picker)
+- [ ] Category management screen (add custom categories)
+- [ ] Dashboard: AZN balance, monthly summary, category breakdown
+- [ ] Charts (fl_chart): category pie + monthly trend
+- Single currency (AZN). Online-only — requires connection.
+
+**Phase 1.2 — Offline queue (separate session)**
+- [ ] Local cache (sqflite/drift or Hive)
+- [ ] Write queue: offline mutations stored, synced on reconnect
+- [ ] Conflict handling (last-write-wins per record)
+- [ ] Optimistic UI updates
 
 ### Phase 2 — Notification Archiver
 - [ ] Android NotificationListenerService (Kotlin)
@@ -90,6 +116,15 @@ All tables: RLS enabled, `user_id = auth.uid()` policy.
 - [ ] Batch confirm delete screen
 - [ ] Filter: photos only / videos only / all
 - [ ] Progress stats: freed space estimate
+
+### Phase 5 — Transaction Attachments (future — after all 3 apps ready)
+- [ ] Optional image per transaction (receipt/proof)
+- [ ] Upload flow: image → Supabase Storage (temporary) → move to a predefined Google Drive folder
+- [ ] After the move succeeds, DELETE the Supabase Storage copy (free plan — keep storage near-zero)
+- [ ] DB stores ONLY the Drive link (not the binary)
+- [ ] Add `attachment_url text` column to transactions (single additive migration when built)
+- Open questions (decide when built): Drive API auth (OAuth vs service account), folder structure,
+  web vs mobile upload paths.
 
 ### Phase 4 — Wallet + Notification Integration
 - [ ] ML/regex parser: detect transaction amounts in notification body
