@@ -1,13 +1,16 @@
 # Project-state.md
 
 ## Current Phase
-**Phase 1.1 — Core Wallet (online-only)** (planning done, build not started)
+**Phase 1.1 — Core Wallet (online-only)** ✅ COMPLETE & LIVE.
+Next: UX/UI polish + **Phase 1.2 — offline queue** (both in a new session).
 
 ## Status
-Phase 0 complete. Flutter shell + auth + CI/CD fully wired. Supabase credentials in place.
-Phase 1.1 design decided (see decisions log). Single currency AZN; categories table with
-system presets; online-only. Offline queue deferred to Phase 1.2 (separate session).
-Supabase MCP added to `.mcp.json` + authenticated; tools load on next IDE session restart.
+Phase 1.1 built, merged to main, and DEPLOYED. Web app live at
+**https://famil-dapti.github.io/personalhub/** (GitHub Pages, auto-deploy on push to main).
+Repo is PUBLIC (required for free Pages; secret scan clean). Migration for categories deployed
+to Supabase. User created a login account and confirmed the app works end-to-end.
+Supabase MCP in `.mcp.json` + authenticated; tools load on next IDE session restart.
+Custom domain DEFERRED — staying on github.io URL for now; will migrate host later for a nicer name.
 
 ## Completed
 - [x] Architecture decision: Flutter + Supabase + Riverpod + go_router
@@ -27,33 +30,36 @@ Supabase MCP added to `.mcp.json` + authenticated; tools load on next IDE sessio
 - [x] Supabase CLI installed (v2.105.0), supabase init done
 - [x] Initial migration written: supabase/migrations/20260605213540_initial_schema.sql
 - [x] First migration verified: tables created in Supabase via native GitHub integration
+- [x] Phase 1.1 Wallet: models, repositories, providers, screens (wallet/add/categories/dashboard), fl_chart
+- [x] categories migration `20260606022924_categories.sql` deployed (Turkish presets + category_id FK)
+- [x] intl tr_TR locale init; all wallet UI in Turkish
+- [x] Merged dev -> main; repo made PUBLIC (secret scan clean)
+- [x] Web deploy CI: `.github/workflows/deploy-web.yml` (build web + GitHub Pages on push to main)
+- [x] Live: https://famil-dapti.github.io/personalhub/ (verified HTTP 200); login account created
 
 ## In Progress
-Phase 1.1 committed + pushed to dev (commit 224ebce). Migration `20260606022924_categories.sql`
-deploying to Supabase via native GitHub integration. Next: verify presets seeded + manual test
-(flutter run). MCP tools load on next IDE session restart.
+Nothing. Phase 1.1 done and deployed. Session closed for handoff to a new chat.
 
-## Next Task — Phase 1.1: Core Wallet (online-only)
+## Next Task — new session (two tracks)
 
-Build in this order:
-1. `supabase/migrations/<ts>_categories.sql` — new migration: categories table + RLS +
-   preset system rows; alter transactions: drop `category` text, add `category_id` FK
-2. `lib/features/wallet/data/models/category_model.dart` — Category data class
-3. `lib/features/wallet/data/models/transaction_model.dart` — Transaction data class
-4. `lib/features/wallet/data/repositories/category_repository.dart` — read presets + own, create custom
-5. `lib/features/wallet/data/repositories/transaction_repository.dart` — CRUD via Supabase
-6. `lib/features/wallet/presentation/providers/wallet_provider.dart` — Riverpod AsyncNotifier (transactions)
-7. `lib/features/wallet/presentation/providers/category_provider.dart` — categories AsyncNotifier
-8. `lib/features/wallet/presentation/screens/wallet_screen.dart` — Replace placeholder: balance card + list
-9. `lib/features/wallet/presentation/widgets/balance_card.dart` — AZN balance + monthly summary
-10. `lib/features/wallet/presentation/widgets/transaction_tile.dart` — List item (category icon/color)
-11. `lib/features/wallet/presentation/screens/add_transaction_screen.dart` — income/expense form + category picker
-12. `lib/features/wallet/presentation/screens/manage_categories_screen.dart` — add/list custom categories
-13. Dashboard charts (fl_chart): category pie + monthly trend
+**Track A — UX/UI polish (wallet)**
+- Review wallet/add/categories/dashboard screens for spacing, empty states, loading skeletons
+- Better balance card visual; transaction list grouping by date; nicer category chips
+- Consistent Turkish copy; error/snackbar feedback on add/delete
+- Consider dark mode pass
+
+**Track B — Phase 1.2: offline queue** (see Project-plan.md Phase 1.2)
+- Local cache (sqflite/drift or Hive); write queue for offline mutations; sync on reconnect
+- Conflict handling (last-write-wins per record); optimistic UI
+
+**Deferred / backlog**
+- Custom domain: migrate host (Cloudflare Pages `personalhub.pages.dev`) or buy cheap domain for a nicer URL
+- Update GitHub Actions to Node 24-compatible versions (deprecation warning, deadline 2026-06-16)
 
 ## Known Blockers
 - Flutter PATH must be added to ~/.zshrc manually:
   `export PATH="$PATH:/Users/familmammadov/development/flutter/bin"`
+- Supabase MCP tools not loaded in current IDE session — restart IDE to load them.
 
 ## Architecture Decisions Log
 | Date | Decision | Reason |
@@ -72,6 +78,7 @@ Build in this order:
 | 2026-06-06 | Web hosting = GitHub Pages (deploy on main) | Repo already on GitHub, no new account, free; Supabase kept for backend |
 | 2026-06-06 | Repo made PUBLIC | GitHub Pages free only on public repos; secret scan clean (only Supabase anon key, public-safe). Live: famil-dapti.github.io/personalhub |
 | 2026-06-06 | Keep Supabase (not Firebase) | Backend works; hosting is a separate layer; FCM can be added later for APK push |
+| 2026-06-06 | Custom domain deferred | GitHub gives no domain; nice free name needs host migration (pages.dev) or cheap domain. Stay on github.io for now |
 
 ## Git Workflow
 - Always work on `dev` branch
