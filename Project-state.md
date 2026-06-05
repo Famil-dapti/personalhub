@@ -70,6 +70,7 @@ Build in this order:
 | 2026-06-06 | Online-only for 1.1; offline queue = Phase 1.2 | Offline sync is high complexity; ship core wallet first |
 | 2026-06-06 | transactions.category text → category_id FK | Relational integrity; no live data so safe to alter |
 | 2026-06-06 | Web hosting = GitHub Pages (deploy on main) | Repo already on GitHub, no new account, free; Supabase kept for backend |
+| 2026-06-06 | Repo made PUBLIC | GitHub Pages free only on public repos; secret scan clean (only Supabase anon key, public-safe). Live: famil-dapti.github.io/personalhub |
 | 2026-06-06 | Keep Supabase (not Firebase) | Backend works; hosting is a separate layer; FCM can be added later for APK push |
 
 ## Git Workflow
