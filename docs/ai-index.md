@@ -58,6 +58,7 @@ Last updated: 2026-06-06
 |---|---|
 | `supabase/migrations/20260605213540_initial_schema.sql` | Creates transactions + notifications tables with RLS |
 | `supabase/migrations/20260606022924_categories.sql` | categories table + RLS + Turkish presets; transactions.category->category_id FK |
+| `.github/workflows/deploy-web.yml` | CI: push to main -> build Flutter web -> deploy to GitHub Pages (famil-dapti.github.io/personalhub) |
 | `.github/workflows/deploy-staging.yml` | CI: push to dev + migration change → supabase db push |
 | `.github/workflows/deploy-production.yml` | CI: push to main + migration change → supabase db push |
 | `pubspec.yaml` | Dependencies: supabase_flutter ^2.9, flutter_riverpod ^2.6.1, go_router ^15.1, google_fonts, fl_chart, intl, uuid |
