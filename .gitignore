@@ -1,0 +1,28 @@
+# Flutter / Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+build/
+*.iml
+.packages
+pubspec.lock
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Supabase local dev temp files
+supabase/.branches/
+supabase/.temp/
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Android local signing (never commit keystores)
+android/key.properties
+android/**/*.jks
+
+# Coverage
+coverage/
