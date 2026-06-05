@@ -1,5 +1,6 @@
 -- PersonalHub: initial schema
 -- Phase 0: Wallet + Notification Archiver tables
+-- CI/CD test: 2026-06-06
 
 -- Transactions (Wallet)
 create table if not exists transactions (
