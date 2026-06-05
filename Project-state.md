@@ -5,7 +5,7 @@
 
 ## Status
 Phase 0 complete. Flutter shell + auth + CI/CD fully wired. Supabase credentials in place.
-Waiting to verify first migration ran successfully via CI/CD, then Phase 1 begins.
+Phase 0 fully complete. Starting Phase 1 — Wallet App. MCP setup pending (next session).
 
 ## Completed
 - [x] Architecture decision: Flutter + Supabase + Riverpod + go_router
@@ -24,7 +24,7 @@ Waiting to verify first migration ran successfully via CI/CD, then Phase 1 begin
 - [x] GitHub secrets set: SUPABASE_ACCESS_TOKEN, SUPABASE_PROJECT_ID, SUPABASE_DB_PASSWORD
 - [x] Supabase CLI installed (v2.105.0), supabase init done
 - [x] Initial migration written: supabase/migrations/20260605213540_initial_schema.sql
-- [ ] First CI/CD migration run verified
+- [x] First migration verified: tables created in Supabase via native GitHub integration
 
 ## In Progress
 Nothing.
