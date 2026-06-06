@@ -1,14 +1,53 @@
 # Project-state.md
 
 ## Current Phase
-**Phase 2A — Notification Archiver (data layer + archive UI)** ✅ CODE COMPLETE on `dev`
-(not yet committed). `flutter analyze` clean, `flutter build web` OK, tests pass. Cross-platform
-and web-verifiable; the Android-native capture path (Phase 2B) is written/verified later on-device.
+**Phase 2 — Notification Archiver** ✅ Phase 2A (UI/data) MERGED+LIVE; **Phase 2B (native capture)
+CODE COMPLETE + VERIFIED ON DEVICE** (uncommitted on `dev`). Captured notifications flow:
+Kotlin NotificationListenerService -> local buffer -> Dart drain on app open -> ingest (Drift +
+outbox) -> Supabase -> web. Confirmed working on a real Xiaomi phone (2026-06-06).
 
-Deferred by user decision (kept for one on-device session): **Phase 1.2 offline E2E test** +
-**Phase 2B native capture** + **design implementation** (mockups in docs/design/personalhub/).
-Plan: finish notification-app implementation, then plug in the Android phone and verify by sending
-self a message ("if it works in one app it works in all").
+Also fixed this session: **missing `INTERNET` permission in the main AndroidManifest** (release
+APKs couldn't reach Supabase — DNS errno 7; debug/profile manifests had it so only release broke).
+
+Remaining deferred (user decision): **Phase 1.2 offline E2E test** + **design implementation**
+(mockups in docs/design/personalhub/).
+
+**Pre-Phase-3 fixes (2026-06-06, user request):**
+1. **Duplicate-notification bug FIXED.** Android re-delivered the same notification (heads-up then
+   collapse-to-bar) and group summaries, so each was archived twice. Two-layer dedup now:
+   (a) native — `NotificationArchiverService` skips `FLAG_GROUP_SUMMARY` and drops repeats by a
+   bounded in-memory `key|postTime` signature set; (b) Dart ingest — `NotificationsController.ingest`
+   skips when an identical row (postedAt + appPackage + title + body) already exists in Drift
+   (`AppDatabase.notificationExistsLike`), covering service-restart/buffer edges. CODE COMPLETE;
+   on-device re-verify pending (deferred with the rest of Android testing).
+2. **"Clear all notifications" button ADDED.** Bildirimler AppBar → delete-sweep action (shown only
+   when the archive is non-empty) → confirm dialog → `NotificationsController.clearAll`:
+   remote-first hard delete from Supabase (`SyncService.purgeNotifications`, frees DB space) then
+   local wipe + notification-outbox purge (`AppDatabase.clearAllNotificationsLocal`). Remote-first so
+   an offline failure leaves both stores intact and is retryable. Note: no tombstones, so a second
+   device keeps its local copies until it also clears (server space is freed regardless).
+   `flutter analyze` clean; tests pass.
+
+**Pre-Phase-3 requirement (NEW, user 2026-06-06):** the same app runs on TWO phones under one
+account, so notifications must carry **per-device attribution** (which phone captured each one) and
+the archive should let you tell/filter by device. ✅ **DONE 2026-06-06** (CODE COMPLETE; on-device
+re-verify deferred with the rest of Android testing):
+- Migration `20260606120000_notification_device_attribution.sql` adds `device_id` + `device_name`
+  to `notifications` (additive/idempotent; existing rows NULL).
+- Drift mirror: `LocalNotifications.deviceId/deviceName`; schemaVersion 2→3 + onUpgrade addColumn
+  (v1 installs get the table fresh; only v2 needs the columns added). `app_database.g.dart` regen'd.
+- `deviceIdentityProvider` (capture_providers): stable per-install uuid persisted in
+  shared_preferences + human-readable model name read natively (`Build.MANUFACTURER + Build.MODEL`
+  via the existing MethodChannel `getDeviceModel`). Stamped at ingest in `NotificationCaptureController`
+  (drain runs in-app on the capturing phone). dedup is now device-scoped so a copy synced from the
+  other phone is never mistaken for a local duplicate.
+  - **Toolchain note:** initially tried `device_info_plus`, but it transitively pulls `win32`, whose
+    Dart 3.12 dot-shorthand syntax crashes the old bundled analyzer during drift codegen
+    (`visitDotShorthandInvocation`) and hangs/fails build_runner. Solution: read the model natively
+    (no extra dep) + a new `build.yaml` disabling the unused `riverpod_generator` builder. drift
+    runtime/sqlite3 versions unchanged (web wasm still matches).
+- UI: AppBar device-filter popup (shown only with 2+ devices), device label on cards (2+ devices)
+  + always in the detail pane.
 
 **Phase 1.2 — Offline queue (Drift)** ✅ CODE COMPLETE, COMMITTED, MERGED TO MAIN, DEPLOYED LIVE.
 Partially verified (launch + production wasm serving). Authenticated offline E2E (add -> persist ->
@@ -127,6 +166,8 @@ Three on-device/visual threads parked for one combined session:
   the committed `web/` wasm+worker binaries — do NOT bump drift/sqlite3 without refreshing those files.
 
 **Deferred / backlog**
+- ✅ **Per-device notification attribution — DONE 2026-06-06** (see the Pre-Phase-3 section above for
+  what shipped). On-device re-verify deferred with the rest of Android testing.
 - **APK distribution + auto-update (DECIDED, not yet implemented).** Chosen approach = "Option B":
   CI builds a **signed** release APK on push/tag and publishes it to **GitHub Releases**; the app
   checks the GitHub Releases API on launch and offers one-tap download/install of a newer version.
@@ -139,6 +180,10 @@ Three on-device/visual threads parked for one combined session:
   **Timing:** implement after the full super app is feature-complete (or re-discuss then).
   Meanwhile: Wallet is already live on web (add-to-home-screen, always current); the APK mainly
   matters for the Android-only Notification Archiver.
+  **Caveat (Android 13+):** sideloaded APKs (GitHub Releases download, Bluetooth share) hit the
+  "restricted settings" block — notification access can't be toggled until the user does App info →
+  ⋮ → "Allow restricted settings" once. USB/adb installs are exempt (why the USB phone worked but
+  the Bluetooth-shared phone needed the extra step). Document this for end users of Option B.
 - Custom domain: migrate host (Cloudflare Pages `personalhub.pages.dev`) or buy cheap domain for a nicer URL
 - Update GitHub Actions to Node 24-compatible versions (deprecation warning, deadline 2026-06-16)
 

@@ -1,6 +1,6 @@
 # ai-index.md — Codebase Map
 
-Last updated: 2026-06-06 (Phase 2A — Notification Archiver UI + data layer)
+Last updated: 2026-06-06 (Pre-Phase-3: dedup fix, clear-all, per-device attribution)
 
 ## Project Root
 
@@ -45,11 +45,13 @@ Last updated: 2026-06-06 (Phase 2A — Notification Archiver UI + data layer)
 | `lib/features/wallet/presentation/widgets/category_visuals.dart` | Icon-name->IconData map + hex->Color helpers |
 | `lib/core/utils/formatters.dart` | formatMoney / formatSignedMoney / formatDate (tr_TR) |
 
-### notifications (Phase 2A — archive UI + data built; 2B native capture pending)
+### notifications (Phase 2 — archive UI + data + native capture; built & device-verified)
 | Path | Purpose |
 |---|---|
 | `lib/features/notifications/data/models/notification_model.dart` | NotificationItem domain model (immutable; toInsert for capture) |
+| `lib/features/notifications/data/notification_capture_service.dart` | MethodChannel bridge to Android listener (isPermissionGranted/openSettings/drainPending); no-op off-Android |
 | `lib/features/notifications/presentation/providers/notifications_provider.dart` | notificationsProvider (Drift stream) + search/filter/selected providers + NotificationsController.ingest (capture write path) |
+| `lib/features/notifications/presentation/providers/capture_providers.dart` | capture service/permission providers + deviceIdentityProvider (persisted uuid + native Build model name) + NotificationCaptureController.drainAndIngest (stamps device + dedups) + looksLikeTransaction heuristic |
 | `lib/features/notifications/presentation/screens/notifications_screen.dart` | Responsive archive: phone list / desktop master-detail; shared NotificationDetailBody |
 | `lib/features/notifications/presentation/screens/notification_detail_screen.dart` | Pushed phone detail (reads selectedNotificationProvider) |
 | `lib/features/notifications/presentation/widgets/notification_card.dart` | Archive row (brand avatar, header, title/body, transaction badge) |
@@ -58,6 +60,7 @@ Last updated: 2026-06-06 (Phase 2A — Notification Archiver UI + data layer)
 | `lib/features/notifications/presentation/widgets/detected_transaction_card.dart` | "Islem olarak algilandi" card (wallet link = Phase 4) |
 | `lib/features/notifications/presentation/widgets/raw_payload_block.dart` | Monospace "Ham veri" payload block |
 | `lib/features/notifications/presentation/widgets/capture_runs_on_phone_banner.dart` | Desktop/web read-only capture banner |
+| `lib/features/notifications/presentation/widgets/permission_screen.dart` | Android notification-access request screen (deep-links to system settings) |
 | `lib/features/notifications/presentation/widgets/notification_visuals.dart` | Deterministic per-app brand color + AppBrandAvatar |
 
 ### media_cleaner (Phase 3 — not yet built)
@@ -68,8 +71,8 @@ Last updated: 2026-06-06 (Phase 2A — Notification Archiver UI + data layer)
 ### offline-first (Phase 1.2 — Drift local DB + sync engine)
 | Path | Purpose |
 |---|---|
-| `lib/core/db/tables.dart` | Drift tables: LocalTransactions, LocalCategories (+updatedAt/deletedAt), LocalNotifications (immutable, append-only), SyncOutbox, SyncState |
-| `lib/core/db/app_database.dart` | AppDatabase: reactive watch* reads, atomic write+outbox, watermark + upsert helpers; cross-platform `driftDatabase()` open (web = relative wasm/worker URIs) |
+| `lib/core/db/tables.dart` | Drift tables: LocalTransactions, LocalCategories (+updatedAt/deletedAt), LocalNotifications (append-only + deviceId/deviceName), SyncOutbox, SyncState |
+| `lib/core/db/app_database.dart` | AppDatabase (schemaVersion 3): reactive watch* reads, atomic write+outbox, watermark + upsert helpers, notificationExistsLike dedup + clearAllNotificationsLocal; cross-platform `driftDatabase()` open (web = relative wasm/worker URIs) |
 | `lib/core/db/app_database.g.dart` | Generated drift code (committed; CI does not run build_runner) |
 | `lib/core/db/mappers.dart` | Drift row -> domain model; Supabase JSON -> Drift companion |
 | `lib/core/db/database_provider.dart` | appDatabaseProvider (singleton AppDatabase) |
@@ -80,14 +83,19 @@ Last updated: 2026-06-06 (Phase 2A — Notification Archiver UI + data layer)
 
 | Path | Purpose |
 |---|---|
+| `android/app/src/main/kotlin/com/personalhub/personalhub/NotificationArchiverService.kt` | NotificationListenerService: captures notifications -> SharedPreferences buffer (Phase 2B) |
+| `android/app/src/main/kotlin/com/personalhub/personalhub/MainActivity.kt` | MethodChannel `personalhub/notifications`: isPermissionGranted/openSettings/drainPending |
+| `android/app/src/main/AndroidManifest.xml` | INTERNET permission (release-build fix) + NotificationListenerService declaration |
 | `supabase/migrations/20260605213540_initial_schema.sql` | Creates transactions + notifications tables with RLS |
 | `supabase/migrations/20260606022924_categories.sql` | categories table + RLS + Turkish presets; transactions.category->category_id FK |
 | `supabase/migrations/20260606074518_offline_sync_columns.sql` | Adds updated_at (server trigger) + deleted_at tombstones + delta indexes to transactions/categories |
+| `supabase/migrations/20260606120000_notification_device_attribution.sql` | Adds device_id + device_name to notifications (which phone captured each one) |
 | `web/sqlite3.wasm`, `web/drift_worker.js` | Drift web runtime (version-matched: sqlite3 2.9.4, drift 2.28.2); served under /personalhub/ via base-href |
 | `.github/workflows/deploy-web.yml` | CI: push to main -> build Flutter web -> deploy to GitHub Pages (famil-dapti.github.io/personalhub) |
 | `.github/workflows/deploy-staging.yml` | CI: push to dev + migration change → supabase db push |
 | `.github/workflows/deploy-production.yml` | CI: push to main + migration change → supabase db push |
-| `pubspec.yaml` | Deps: supabase_flutter ^2.9, flutter_riverpod ^2.6.1, go_router ^15.1, google_fonts, fl_chart, intl, uuid, drift + drift_flutter + sqlite3_flutter_libs + connectivity_plus (offline) |
+| `pubspec.yaml` | Deps: supabase_flutter ^2.9, flutter_riverpod ^2.6.1, go_router ^15.1, google_fonts, fl_chart, intl, uuid, shared_preferences, drift + drift_flutter + sqlite3_flutter_libs + connectivity_plus (offline) |
+| `build.yaml` | Codegen config: disables riverpod_generator (unused; crashes old analyzer on SDK 3.12), leaves only drift_dev |
 
 ## Navigation Routes
 | Route | Screen | Auth required |

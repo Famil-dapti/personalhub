@@ -32,8 +32,23 @@ final notificationAppsProvider = Provider<List<String>>((ref) {
   return sorted;
 });
 
+// Distinct capturing-device names present in the archive, for the device filter.
+final notificationDevicesProvider = Provider<List<String>>((ref) {
+  final items = ref.watch(notificationsProvider).valueOrNull ?? const [];
+  final names = <String>{
+    for (final n in items)
+      if (n.deviceName != null && n.deviceName!.isNotEmpty) n.deviceName!,
+  };
+  final sorted = names.toList()..sort();
+  return sorted;
+});
+
 final notificationSearchProvider = StateProvider<String>((ref) => '');
 final notificationFilterProvider = StateProvider<String>((ref) => kFilterAll);
+
+// Device-name filter; null = all devices (independent of the app/transaction filter).
+final notificationDeviceFilterProvider =
+    StateProvider<String?>((ref) => null);
 
 // Currently selected row (desktop master-detail; null = none selected).
 final selectedNotificationIdProvider = StateProvider<String?>((ref) => null);
@@ -44,8 +59,10 @@ final filteredNotificationsProvider =
   final items = ref.watch(notificationsProvider).valueOrNull ?? const [];
   final query = ref.watch(notificationSearchProvider).trim().toLowerCase();
   final filter = ref.watch(notificationFilterProvider);
+  final deviceFilter = ref.watch(notificationDeviceFilterProvider);
 
   return items.where((n) {
+    if (deviceFilter != null && n.deviceName != deviceFilter) return false;
     if (filter == kFilterTransactions && !n.isTransaction) return false;
     if (filter != kFilterAll &&
         filter != kFilterTransactions &&
@@ -85,6 +102,19 @@ class NotificationsController {
   Future<String?> ingest(NotificationItem n) async {
     try {
       final userId = _ref.read(supabaseClientProvider).auth.currentUser!.id;
+      final db = _ref.read(appDatabaseProvider);
+
+      // Drop duplicates Android re-delivers (e.g. heads-up then collapse-to-bar)
+      // that slip past the native dedup; identity = posted time + source + text.
+      final duplicate = await db.notificationExistsLike(
+        deviceId: n.deviceId,
+        postedAt: n.postedAt,
+        appPackage: n.appPackage,
+        title: n.title,
+        body: n.body,
+      );
+      if (duplicate) return null;
+
       final id = n.id.isEmpty ? _uuid.v4() : n.id;
       final row = LocalNotificationsCompanion.insert(
         id: id,
@@ -97,6 +127,8 @@ class NotificationsController {
         postedAt: Value(n.postedAt),
         isTransaction: Value(n.isTransaction),
         rawJson: Value(n.rawJson),
+        deviceId: Value(n.deviceId),
+        deviceName: Value(n.deviceName),
       );
       final payload = NotificationItem(
         id: id,
@@ -109,11 +141,24 @@ class NotificationsController {
         postedAt: n.postedAt,
         isTransaction: n.isTransaction,
         rawJson: n.rawJson,
+        deviceId: n.deviceId,
+        deviceName: n.deviceName,
       ).toInsert(userId);
-      await _ref
-          .read(appDatabaseProvider)
-          .enqueueUpsertNotification(row, payload);
+      await db.enqueueUpsertNotification(row, payload);
       _ref.read(syncServiceProvider).syncAll();
+      return null;
+    } on Exception catch (e) {
+      return e.toString();
+    }
+  }
+
+  /// Deletes every archived notification — remotely (frees Supabase space) then
+  /// locally. Remote-first so a failure (offline) leaves both stores intact and
+  /// the action can be retried. Returns null on success, else an error message.
+  Future<String?> clearAll() async {
+    try {
+      await _ref.read(syncServiceProvider).purgeNotifications();
+      await _ref.read(appDatabaseProvider).clearAllNotificationsLocal();
       return null;
     } on Exception catch (e) {
       return e.toString();

@@ -44,6 +44,8 @@ NotificationItem notificationToDomain(LocalNotification r) => NotificationItem(
       postedAt: r.postedAt,
       isTransaction: r.isTransaction,
       rawJson: r.rawJson,
+      deviceId: r.deviceId,
+      deviceName: r.deviceName,
       createdAt: r.createdAt,
     );
 
@@ -96,6 +98,8 @@ LocalNotificationsCompanion notificationCompanionFromRemote(
     postedAt: Value(_parseNullableDate(j['posted_at'])),
     isTransaction: Value((j['is_transaction'] as bool?) ?? false),
     rawJson: Value(raw == null ? null : jsonEncode(raw)),
+    deviceId: Value(j['device_id'] as String?),
+    deviceName: Value(j['device_name'] as String?),
     createdAt: Value(DateTime.parse(j['created_at'] as String)),
   );
 }

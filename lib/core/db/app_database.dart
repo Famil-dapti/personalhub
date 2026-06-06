@@ -31,14 +31,20 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_open());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
-  // v2 adds the LocalNotifications mirror (Phase 2). Existing installs only
-  // need the new table created; all other tables are unchanged.
+  // v2 adds the LocalNotifications mirror (Phase 2). v3 adds per-device capture
+  // attribution columns. Existing installs only get the missing pieces.
   @override
   MigrationStrategy get migration => MigrationStrategy(
         onUpgrade: (m, from, to) async {
+          // v1 installs get the table fresh (already includes the v3 columns);
+          // only an existing v2 table needs the columns added.
           if (from < 2) await m.createTable(localNotifications);
+          if (from == 2) {
+            await m.addColumn(localNotifications, localNotifications.deviceId);
+            await m.addColumn(localNotifications, localNotifications.deviceName);
+          }
         },
       );
 
@@ -111,6 +117,41 @@ class AppDatabase extends _$AppDatabase {
     return transaction(() async {
       await into(localNotifications).insertOnConflictUpdate(row);
       await _enqueue(kNotificationsTable, row.id.value, 'upsert', payload);
+    });
+  }
+
+  // Dedup guard for capture: true if the SAME device already stored an
+  // identical notification (same posted time + source + content) — i.e. a
+  // re-delivery (heads-up then collapse-to-bar), not a distinct event. Scoped
+  // to deviceId so a copy synced from the other phone is never mistaken for a
+  // duplicate of this phone's own capture.
+  Future<bool> notificationExistsLike({
+    required String? deviceId,
+    required DateTime? postedAt,
+    required String? appPackage,
+    required String? title,
+    required String? body,
+  }) async {
+    final query = select(localNotifications)
+      ..where((n) =>
+          n.deviceId.equalsNullable(deviceId) &
+          n.postedAt.equalsNullable(postedAt) &
+          n.appPackage.equalsNullable(appPackage) &
+          n.title.equalsNullable(title) &
+          n.body.equalsNullable(body))
+      ..limit(1);
+    final row = await query.getSingleOrNull();
+    return row != null;
+  }
+
+  // Local side of "clear all notifications": wipe the mirror and drop any
+  // not-yet-pushed notification upserts so they cannot recreate deleted rows.
+  Future<void> clearAllNotificationsLocal() {
+    return transaction(() async {
+      await delete(localNotifications).go();
+      await (delete(syncOutbox)
+            ..where((o) => o.entityTable.equals(kNotificationsTable)))
+          .go();
     });
   }
 

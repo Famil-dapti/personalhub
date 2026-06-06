@@ -36,6 +36,18 @@ class SyncService {
     }
   }
 
+  // --- Maintenance ---------------------------------------------------------
+
+  /// Hard-deletes every notification of the signed-in user from Supabase to
+  /// reclaim server space. Notifications are a disposable archive (append-only,
+  /// no tombstones), so this is a real delete rather than a soft-delete.
+  /// Throws when offline — the caller surfaces that to the user.
+  Future<void> purgeNotifications() async {
+    final userId = _client.auth.currentUser?.id;
+    if (userId == null) return;
+    await _client.from(kNotificationsTable).delete().eq('user_id', userId);
+  }
+
   // --- Push ----------------------------------------------------------------
 
   Future<void> _pushOutbox() async {

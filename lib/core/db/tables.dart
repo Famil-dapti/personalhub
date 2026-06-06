@@ -52,6 +52,9 @@ class LocalNotifications extends Table {
   DateTimeColumn get postedAt => dateTime().nullable()();
   BoolColumn get isTransaction => boolean().withDefault(const Constant(false))();
   TextColumn get rawJson => text().nullable()();
+  // Which phone captured this (two phones, one account). Null for older rows.
+  TextColumn get deviceId => text().nullable()();
+  TextColumn get deviceName => text().nullable()();
   DateTimeColumn get createdAt => dateTime()();
 
   @override

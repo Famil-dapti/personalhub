@@ -13,6 +13,8 @@ class NotificationItem {
     this.postedAt,
     this.isTransaction = false,
     this.rawJson,
+    this.deviceId,
+    this.deviceName,
   });
 
   final String id;
@@ -25,6 +27,8 @@ class NotificationItem {
   final DateTime? postedAt; // when Android posted it (preferred display time)
   final bool isTransaction; // heuristic: looks like a payment notification
   final String? rawJson; // full payload, encoded JSON string
+  final String? deviceId; // stable id of the phone that captured this
+  final String? deviceName; // human-readable model of that phone
 
   // Fall back to the insert time when the device did not stamp a posted time.
   DateTime get displayTime => postedAt ?? createdAt;
@@ -46,6 +50,8 @@ class NotificationItem {
           : DateTime.parse(json['posted_at'] as String),
       isTransaction: (json['is_transaction'] as bool?) ?? false,
       rawJson: json['raw_json']?.toString(),
+      deviceId: json['device_id'] as String?,
+      deviceName: json['device_name'] as String?,
     );
   }
 
@@ -62,6 +68,8 @@ class NotificationItem {
       'posted_at': postedAt?.toIso8601String(),
       'is_transaction': isTransaction,
       'raw_json': rawJson,
+      'device_id': deviceId,
+      'device_name': deviceName,
       'created_at': createdAt.toIso8601String(),
     };
   }

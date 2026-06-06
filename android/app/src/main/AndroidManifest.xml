@@ -1,4 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Required in release builds for Supabase/network access. The debug and
+         profile manifests declare this too, so debug runs masked this gap. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
         android:label="personalhub"
         android:name="${applicationName}"
@@ -25,6 +28,19 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <!-- Phase 2B: notification capture. Bound by the system while the user
+             grants "Notification access" in Settings; protected by the signature
+             BIND permission so only the system can bind it. -->
+        <service
+            android:name=".NotificationArchiverService"
+            android:label="PersonalHub Bildirim Arsivi"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
+
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data
