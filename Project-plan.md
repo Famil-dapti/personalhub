@@ -103,12 +103,30 @@ All tables: RLS enabled, `user_id = auth.uid()` policy.
 - [ ] Manual end-to-end verification (offline add/delete -> reconnect -> bidirectional sync)
 
 ### Phase 2 — Notification Archiver
+
+Split so the Android-testing dependency does not block progress: 2A is fully
+cross-platform and web-verifiable now; 2B is the native capture path, written
+later and verified on-device in one session (same device session as the
+Phase 1.2 offline E2E test).
+
+**Phase 2A — Data layer + Archive UI (cross-platform)** — code complete 2026-06-06
+- [x] Lightweight sync (NOT full offline-first): notifications are immutable/
+      append-only, so no edit/delete/LWW machinery. Capture → Drift + outbox →
+      Supabase upsert; all clients delta-pull by `created_at` watermark.
+- [x] Drift `LocalNotifications` mirror (schema v2 + onUpgrade migration; no
+      server migration needed — table + RLS already exist)
+- [x] Archive UI: search, filter chips (Tumu/Islemler/per-app), day grouping,
+      notification card (+ transaction badge), detail view, raw payload block
+- [x] Responsive: phone list (pushed detail) + desktop/web master-detail
+- [x] Web read-only archive (capture-runs-on-phone banner)
+- [x] `flutter analyze` clean; `flutter build web` OK; tests pass
+
+**Phase 2B — Android native capture (write now, verify on-device)** — pending
 - [ ] Android NotificationListenerService (Kotlin)
-- [ ] Platform channel: Kotlin -> Flutter stream
-- [ ] Save notifications to Supabase in background
-- [ ] Archive UI: searchable list, filter by app/date
-- [ ] Web view: read-only archive
+- [ ] Platform channel: Kotlin -> Flutter stream -> `NotificationsController.ingest()`
 - [ ] Foreground service with persistent notification
+- [ ] Phone permission/setup flow (grant NotificationListener access)
+- [ ] On-device verification: send self a message, confirm capture → archive → sync
 
 ### Phase 3 — Media Cleaner
 - [ ] Scan device media (photo_manager package)

@@ -29,6 +29,8 @@ class SyncService {
       await _pushOutbox();
       await _pullTable(kTransactionsTable);
       await _pullTable(kCategoriesTable);
+      // Notifications are immutable; created_at is the monotonic watermark.
+      await _pullTable(kNotificationsTable, watermarkColumn: 'created_at');
     } finally {
       _running = false;
     }
@@ -72,37 +74,45 @@ class SyncService {
 
   // --- Pull ----------------------------------------------------------------
 
-  Future<void> _pullTable(String table) async {
+  Future<void> _pullTable(
+    String table, {
+    String watermarkColumn = 'updated_at',
+  }) async {
     final since = await _db.watermark(table);
     final filter = _client.from(table).select();
     final rows = since == null
-        ? await filter.order('updated_at', ascending: true)
+        ? await filter.order(watermarkColumn, ascending: true)
         : await filter
-            .gt('updated_at', since.toUtc().toIso8601String())
-            .order('updated_at', ascending: true);
+            .gt(watermarkColumn, since.toUtc().toIso8601String())
+            .order(watermarkColumn, ascending: true);
     if (rows.isEmpty) return;
 
     final list = rows.cast<Map<String, dynamic>>();
-    if (table == kTransactionsTable) {
-      await _db.upsertTransactions(
-          list.map(transactionCompanionFromRemote).toList());
-    } else {
-      await _db.upsertCategories(
-          list.map(categoryCompanionFromRemote).toList());
-    }
+    await _upsertPulled(table, list);
 
     var maxTs = since ?? DateTime.fromMillisecondsSinceEpoch(0, isUtc: true);
     for (final row in list) {
-      final ts = DateTime.parse(row['updated_at'] as String);
+      final ts = DateTime.parse(row[watermarkColumn] as String);
       if (ts.isAfter(maxTs)) maxTs = ts;
     }
     await _db.setWatermark(table, maxTs);
   }
 
-  Future<void> _applyRemoteRow(String table, Map<String, dynamic> row) {
-    if (table == kTransactionsTable) {
-      return _db.upsertTransactions([transactionCompanionFromRemote(row)]);
+  Future<void> _upsertPulled(String table, List<Map<String, dynamic>> list) {
+    switch (table) {
+      case kTransactionsTable:
+        return _db
+            .upsertTransactions(list.map(transactionCompanionFromRemote).toList());
+      case kCategoriesTable:
+        return _db
+            .upsertCategories(list.map(categoryCompanionFromRemote).toList());
+      default:
+        return _db.upsertNotifications(
+            list.map(notificationCompanionFromRemote).toList());
     }
-    return _db.upsertCategories([categoryCompanionFromRemote(row)]);
+  }
+
+  Future<void> _applyRemoteRow(String table, Map<String, dynamic> row) {
+    return _upsertPulled(table, [row]);
   }
 }

@@ -11,6 +11,7 @@ part 'app_database.g.dart';
 /// Supabase table names, reused as outbox `entityTable` values.
 const String kTransactionsTable = 'transactions';
 const String kCategoriesTable = 'categories';
+const String kNotificationsTable = 'notifications';
 
 const _uuid = Uuid();
 
@@ -18,13 +19,28 @@ const _uuid = Uuid();
 /// the sync outbox and watermarks. All UI reads come from here; writes land
 /// here first (optimistic) and an outbox row is queued for the sync engine.
 @DriftDatabase(
-  tables: [LocalTransactions, LocalCategories, SyncOutbox, SyncState],
+  tables: [
+    LocalTransactions,
+    LocalCategories,
+    LocalNotifications,
+    SyncOutbox,
+    SyncState,
+  ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_open());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  // v2 adds the LocalNotifications mirror (Phase 2). Existing installs only
+  // need the new table created; all other tables are unchanged.
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+        onUpgrade: (m, from, to) async {
+          if (from < 2) await m.createTable(localNotifications);
+        },
+      );
 
   // --- Reactive reads (UI) --------------------------------------------------
 
@@ -39,6 +55,12 @@ class AppDatabase extends _$AppDatabase {
     return (select(localCategories)
           ..where((c) => c.deletedAt.isNull())
           ..orderBy([(c) => OrderingTerm.asc(c.sortOrder)]))
+        .watch();
+  }
+
+  Stream<List<LocalNotification>> watchNotifications() {
+    return (select(localNotifications)
+          ..orderBy([(n) => OrderingTerm.desc(n.createdAt)]))
         .watch();
   }
 
@@ -77,6 +99,18 @@ class AppDatabase extends _$AppDatabase {
       await (update(localCategories)..where((c) => c.id.equals(id)))
           .write(LocalCategoriesCompanion(deletedAt: Value(DateTime.now())));
       await _enqueue(kCategoriesTable, id, 'delete', null);
+    });
+  }
+
+  // Captured notifications are immutable: write the row locally and queue an
+  // upsert push. No delete/update path (notifications are never edited).
+  Future<void> enqueueUpsertNotification(
+    LocalNotificationsCompanion row,
+    Map<String, dynamic> payload,
+  ) {
+    return transaction(() async {
+      await into(localNotifications).insertOnConflictUpdate(row);
+      await _enqueue(kNotificationsTable, row.id.value, 'upsert', payload);
     });
   }
 
@@ -129,6 +163,10 @@ class AppDatabase extends _$AppDatabase {
 
   Future<void> upsertCategories(List<LocalCategoriesCompanion> rows) {
     return batch((b) => b.insertAllOnConflictUpdate(localCategories, rows));
+  }
+
+  Future<void> upsertNotifications(List<LocalNotificationsCompanion> rows) {
+    return batch((b) => b.insertAllOnConflictUpdate(localNotifications, rows));
   }
 }
 

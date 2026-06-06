@@ -1266,6 +1266,621 @@ class LocalCategoriesCompanion extends UpdateCompanion<LocalCategory> {
   }
 }
 
+class $LocalNotificationsTable extends LocalNotifications
+    with TableInfo<$LocalNotificationsTable, LocalNotification> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalNotificationsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _appPackageMeta = const VerificationMeta(
+    'appPackage',
+  );
+  @override
+  late final GeneratedColumn<String> appPackage = GeneratedColumn<String>(
+    'app_package',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _appNameMeta = const VerificationMeta(
+    'appName',
+  );
+  @override
+  late final GeneratedColumn<String> appName = GeneratedColumn<String>(
+    'app_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+    'title',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _bodyMeta = const VerificationMeta('body');
+  @override
+  late final GeneratedColumn<String> body = GeneratedColumn<String>(
+    'body',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _postedAtMeta = const VerificationMeta(
+    'postedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> postedAt = GeneratedColumn<DateTime>(
+    'posted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _isTransactionMeta = const VerificationMeta(
+    'isTransaction',
+  );
+  @override
+  late final GeneratedColumn<bool> isTransaction = GeneratedColumn<bool>(
+    'is_transaction',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_transaction" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _rawJsonMeta = const VerificationMeta(
+    'rawJson',
+  );
+  @override
+  late final GeneratedColumn<String> rawJson = GeneratedColumn<String>(
+    'raw_json',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    userId,
+    appPackage,
+    appName,
+    title,
+    body,
+    postedAt,
+    isTransaction,
+    rawJson,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_notifications';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalNotification> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
+    }
+    if (data.containsKey('app_package')) {
+      context.handle(
+        _appPackageMeta,
+        appPackage.isAcceptableOrUnknown(data['app_package']!, _appPackageMeta),
+      );
+    }
+    if (data.containsKey('app_name')) {
+      context.handle(
+        _appNameMeta,
+        appName.isAcceptableOrUnknown(data['app_name']!, _appNameMeta),
+      );
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+        _titleMeta,
+        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
+      );
+    }
+    if (data.containsKey('body')) {
+      context.handle(
+        _bodyMeta,
+        body.isAcceptableOrUnknown(data['body']!, _bodyMeta),
+      );
+    }
+    if (data.containsKey('posted_at')) {
+      context.handle(
+        _postedAtMeta,
+        postedAt.isAcceptableOrUnknown(data['posted_at']!, _postedAtMeta),
+      );
+    }
+    if (data.containsKey('is_transaction')) {
+      context.handle(
+        _isTransactionMeta,
+        isTransaction.isAcceptableOrUnknown(
+          data['is_transaction']!,
+          _isTransactionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('raw_json')) {
+      context.handle(
+        _rawJsonMeta,
+        rawJson.isAcceptableOrUnknown(data['raw_json']!, _rawJsonMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  LocalNotification map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalNotification(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      )!,
+      appPackage: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}app_package'],
+      ),
+      appName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}app_name'],
+      ),
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      ),
+      body: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}body'],
+      ),
+      postedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}posted_at'],
+      ),
+      isTransaction: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_transaction'],
+      )!,
+      rawJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}raw_json'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $LocalNotificationsTable createAlias(String alias) {
+    return $LocalNotificationsTable(attachedDatabase, alias);
+  }
+}
+
+class LocalNotification extends DataClass
+    implements Insertable<LocalNotification> {
+  final String id;
+  final String userId;
+  final String? appPackage;
+  final String? appName;
+  final String? title;
+  final String? body;
+  final DateTime? postedAt;
+  final bool isTransaction;
+  final String? rawJson;
+  final DateTime createdAt;
+  const LocalNotification({
+    required this.id,
+    required this.userId,
+    this.appPackage,
+    this.appName,
+    this.title,
+    this.body,
+    this.postedAt,
+    required this.isTransaction,
+    this.rawJson,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['user_id'] = Variable<String>(userId);
+    if (!nullToAbsent || appPackage != null) {
+      map['app_package'] = Variable<String>(appPackage);
+    }
+    if (!nullToAbsent || appName != null) {
+      map['app_name'] = Variable<String>(appName);
+    }
+    if (!nullToAbsent || title != null) {
+      map['title'] = Variable<String>(title);
+    }
+    if (!nullToAbsent || body != null) {
+      map['body'] = Variable<String>(body);
+    }
+    if (!nullToAbsent || postedAt != null) {
+      map['posted_at'] = Variable<DateTime>(postedAt);
+    }
+    map['is_transaction'] = Variable<bool>(isTransaction);
+    if (!nullToAbsent || rawJson != null) {
+      map['raw_json'] = Variable<String>(rawJson);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  LocalNotificationsCompanion toCompanion(bool nullToAbsent) {
+    return LocalNotificationsCompanion(
+      id: Value(id),
+      userId: Value(userId),
+      appPackage: appPackage == null && nullToAbsent
+          ? const Value.absent()
+          : Value(appPackage),
+      appName: appName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(appName),
+      title: title == null && nullToAbsent
+          ? const Value.absent()
+          : Value(title),
+      body: body == null && nullToAbsent ? const Value.absent() : Value(body),
+      postedAt: postedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(postedAt),
+      isTransaction: Value(isTransaction),
+      rawJson: rawJson == null && nullToAbsent
+          ? const Value.absent()
+          : Value(rawJson),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory LocalNotification.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalNotification(
+      id: serializer.fromJson<String>(json['id']),
+      userId: serializer.fromJson<String>(json['userId']),
+      appPackage: serializer.fromJson<String?>(json['appPackage']),
+      appName: serializer.fromJson<String?>(json['appName']),
+      title: serializer.fromJson<String?>(json['title']),
+      body: serializer.fromJson<String?>(json['body']),
+      postedAt: serializer.fromJson<DateTime?>(json['postedAt']),
+      isTransaction: serializer.fromJson<bool>(json['isTransaction']),
+      rawJson: serializer.fromJson<String?>(json['rawJson']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'userId': serializer.toJson<String>(userId),
+      'appPackage': serializer.toJson<String?>(appPackage),
+      'appName': serializer.toJson<String?>(appName),
+      'title': serializer.toJson<String?>(title),
+      'body': serializer.toJson<String?>(body),
+      'postedAt': serializer.toJson<DateTime?>(postedAt),
+      'isTransaction': serializer.toJson<bool>(isTransaction),
+      'rawJson': serializer.toJson<String?>(rawJson),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  LocalNotification copyWith({
+    String? id,
+    String? userId,
+    Value<String?> appPackage = const Value.absent(),
+    Value<String?> appName = const Value.absent(),
+    Value<String?> title = const Value.absent(),
+    Value<String?> body = const Value.absent(),
+    Value<DateTime?> postedAt = const Value.absent(),
+    bool? isTransaction,
+    Value<String?> rawJson = const Value.absent(),
+    DateTime? createdAt,
+  }) => LocalNotification(
+    id: id ?? this.id,
+    userId: userId ?? this.userId,
+    appPackage: appPackage.present ? appPackage.value : this.appPackage,
+    appName: appName.present ? appName.value : this.appName,
+    title: title.present ? title.value : this.title,
+    body: body.present ? body.value : this.body,
+    postedAt: postedAt.present ? postedAt.value : this.postedAt,
+    isTransaction: isTransaction ?? this.isTransaction,
+    rawJson: rawJson.present ? rawJson.value : this.rawJson,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  LocalNotification copyWithCompanion(LocalNotificationsCompanion data) {
+    return LocalNotification(
+      id: data.id.present ? data.id.value : this.id,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      appPackage: data.appPackage.present
+          ? data.appPackage.value
+          : this.appPackage,
+      appName: data.appName.present ? data.appName.value : this.appName,
+      title: data.title.present ? data.title.value : this.title,
+      body: data.body.present ? data.body.value : this.body,
+      postedAt: data.postedAt.present ? data.postedAt.value : this.postedAt,
+      isTransaction: data.isTransaction.present
+          ? data.isTransaction.value
+          : this.isTransaction,
+      rawJson: data.rawJson.present ? data.rawJson.value : this.rawJson,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalNotification(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('appPackage: $appPackage, ')
+          ..write('appName: $appName, ')
+          ..write('title: $title, ')
+          ..write('body: $body, ')
+          ..write('postedAt: $postedAt, ')
+          ..write('isTransaction: $isTransaction, ')
+          ..write('rawJson: $rawJson, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    userId,
+    appPackage,
+    appName,
+    title,
+    body,
+    postedAt,
+    isTransaction,
+    rawJson,
+    createdAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalNotification &&
+          other.id == this.id &&
+          other.userId == this.userId &&
+          other.appPackage == this.appPackage &&
+          other.appName == this.appName &&
+          other.title == this.title &&
+          other.body == this.body &&
+          other.postedAt == this.postedAt &&
+          other.isTransaction == this.isTransaction &&
+          other.rawJson == this.rawJson &&
+          other.createdAt == this.createdAt);
+}
+
+class LocalNotificationsCompanion extends UpdateCompanion<LocalNotification> {
+  final Value<String> id;
+  final Value<String> userId;
+  final Value<String?> appPackage;
+  final Value<String?> appName;
+  final Value<String?> title;
+  final Value<String?> body;
+  final Value<DateTime?> postedAt;
+  final Value<bool> isTransaction;
+  final Value<String?> rawJson;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const LocalNotificationsCompanion({
+    this.id = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.appPackage = const Value.absent(),
+    this.appName = const Value.absent(),
+    this.title = const Value.absent(),
+    this.body = const Value.absent(),
+    this.postedAt = const Value.absent(),
+    this.isTransaction = const Value.absent(),
+    this.rawJson = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalNotificationsCompanion.insert({
+    required String id,
+    required String userId,
+    this.appPackage = const Value.absent(),
+    this.appName = const Value.absent(),
+    this.title = const Value.absent(),
+    this.body = const Value.absent(),
+    this.postedAt = const Value.absent(),
+    this.isTransaction = const Value.absent(),
+    this.rawJson = const Value.absent(),
+    required DateTime createdAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       userId = Value(userId),
+       createdAt = Value(createdAt);
+  static Insertable<LocalNotification> custom({
+    Expression<String>? id,
+    Expression<String>? userId,
+    Expression<String>? appPackage,
+    Expression<String>? appName,
+    Expression<String>? title,
+    Expression<String>? body,
+    Expression<DateTime>? postedAt,
+    Expression<bool>? isTransaction,
+    Expression<String>? rawJson,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (userId != null) 'user_id': userId,
+      if (appPackage != null) 'app_package': appPackage,
+      if (appName != null) 'app_name': appName,
+      if (title != null) 'title': title,
+      if (body != null) 'body': body,
+      if (postedAt != null) 'posted_at': postedAt,
+      if (isTransaction != null) 'is_transaction': isTransaction,
+      if (rawJson != null) 'raw_json': rawJson,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalNotificationsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? userId,
+    Value<String?>? appPackage,
+    Value<String?>? appName,
+    Value<String?>? title,
+    Value<String?>? body,
+    Value<DateTime?>? postedAt,
+    Value<bool>? isTransaction,
+    Value<String?>? rawJson,
+    Value<DateTime>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return LocalNotificationsCompanion(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      appPackage: appPackage ?? this.appPackage,
+      appName: appName ?? this.appName,
+      title: title ?? this.title,
+      body: body ?? this.body,
+      postedAt: postedAt ?? this.postedAt,
+      isTransaction: isTransaction ?? this.isTransaction,
+      rawJson: rawJson ?? this.rawJson,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (appPackage.present) {
+      map['app_package'] = Variable<String>(appPackage.value);
+    }
+    if (appName.present) {
+      map['app_name'] = Variable<String>(appName.value);
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (body.present) {
+      map['body'] = Variable<String>(body.value);
+    }
+    if (postedAt.present) {
+      map['posted_at'] = Variable<DateTime>(postedAt.value);
+    }
+    if (isTransaction.present) {
+      map['is_transaction'] = Variable<bool>(isTransaction.value);
+    }
+    if (rawJson.present) {
+      map['raw_json'] = Variable<String>(rawJson.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalNotificationsCompanion(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('appPackage: $appPackage, ')
+          ..write('appName: $appName, ')
+          ..write('title: $title, ')
+          ..write('body: $body, ')
+          ..write('postedAt: $postedAt, ')
+          ..write('isTransaction: $isTransaction, ')
+          ..write('rawJson: $rawJson, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $SyncOutboxTable extends SyncOutbox
     with TableInfo<$SyncOutboxTable, SyncOutboxData> {
   @override
@@ -1909,6 +2524,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $LocalCategoriesTable localCategories = $LocalCategoriesTable(
     this,
   );
+  late final $LocalNotificationsTable localNotifications =
+      $LocalNotificationsTable(this);
   late final $SyncOutboxTable syncOutbox = $SyncOutboxTable(this);
   late final $SyncStateTable syncState = $SyncStateTable(this);
   @override
@@ -1918,6 +2535,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   List<DatabaseSchemaEntity> get allSchemaEntities => [
     localTransactions,
     localCategories,
+    localNotifications,
     syncOutbox,
     syncState,
   ];
@@ -2553,6 +3171,318 @@ typedef $$LocalCategoriesTableProcessedTableManager =
       LocalCategory,
       PrefetchHooks Function()
     >;
+typedef $$LocalNotificationsTableCreateCompanionBuilder =
+    LocalNotificationsCompanion Function({
+      required String id,
+      required String userId,
+      Value<String?> appPackage,
+      Value<String?> appName,
+      Value<String?> title,
+      Value<String?> body,
+      Value<DateTime?> postedAt,
+      Value<bool> isTransaction,
+      Value<String?> rawJson,
+      required DateTime createdAt,
+      Value<int> rowid,
+    });
+typedef $$LocalNotificationsTableUpdateCompanionBuilder =
+    LocalNotificationsCompanion Function({
+      Value<String> id,
+      Value<String> userId,
+      Value<String?> appPackage,
+      Value<String?> appName,
+      Value<String?> title,
+      Value<String?> body,
+      Value<DateTime?> postedAt,
+      Value<bool> isTransaction,
+      Value<String?> rawJson,
+      Value<DateTime> createdAt,
+      Value<int> rowid,
+    });
+
+class $$LocalNotificationsTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalNotificationsTable> {
+  $$LocalNotificationsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get appPackage => $composableBuilder(
+    column: $table.appPackage,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get appName => $composableBuilder(
+    column: $table.appName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get body => $composableBuilder(
+    column: $table.body,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get postedAt => $composableBuilder(
+    column: $table.postedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isTransaction => $composableBuilder(
+    column: $table.isTransaction,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get rawJson => $composableBuilder(
+    column: $table.rawJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LocalNotificationsTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalNotificationsTable> {
+  $$LocalNotificationsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get appPackage => $composableBuilder(
+    column: $table.appPackage,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get appName => $composableBuilder(
+    column: $table.appName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get body => $composableBuilder(
+    column: $table.body,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get postedAt => $composableBuilder(
+    column: $table.postedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isTransaction => $composableBuilder(
+    column: $table.isTransaction,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get rawJson => $composableBuilder(
+    column: $table.rawJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LocalNotificationsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalNotificationsTable> {
+  $$LocalNotificationsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get userId =>
+      $composableBuilder(column: $table.userId, builder: (column) => column);
+
+  GeneratedColumn<String> get appPackage => $composableBuilder(
+    column: $table.appPackage,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get appName =>
+      $composableBuilder(column: $table.appName, builder: (column) => column);
+
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<String> get body =>
+      $composableBuilder(column: $table.body, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get postedAt =>
+      $composableBuilder(column: $table.postedAt, builder: (column) => column);
+
+  GeneratedColumn<bool> get isTransaction => $composableBuilder(
+    column: $table.isTransaction,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get rawJson =>
+      $composableBuilder(column: $table.rawJson, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$LocalNotificationsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LocalNotificationsTable,
+          LocalNotification,
+          $$LocalNotificationsTableFilterComposer,
+          $$LocalNotificationsTableOrderingComposer,
+          $$LocalNotificationsTableAnnotationComposer,
+          $$LocalNotificationsTableCreateCompanionBuilder,
+          $$LocalNotificationsTableUpdateCompanionBuilder,
+          (
+            LocalNotification,
+            BaseReferences<
+              _$AppDatabase,
+              $LocalNotificationsTable,
+              LocalNotification
+            >,
+          ),
+          LocalNotification,
+          PrefetchHooks Function()
+        > {
+  $$LocalNotificationsTableTableManager(
+    _$AppDatabase db,
+    $LocalNotificationsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalNotificationsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LocalNotificationsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LocalNotificationsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> userId = const Value.absent(),
+                Value<String?> appPackage = const Value.absent(),
+                Value<String?> appName = const Value.absent(),
+                Value<String?> title = const Value.absent(),
+                Value<String?> body = const Value.absent(),
+                Value<DateTime?> postedAt = const Value.absent(),
+                Value<bool> isTransaction = const Value.absent(),
+                Value<String?> rawJson = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalNotificationsCompanion(
+                id: id,
+                userId: userId,
+                appPackage: appPackage,
+                appName: appName,
+                title: title,
+                body: body,
+                postedAt: postedAt,
+                isTransaction: isTransaction,
+                rawJson: rawJson,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String userId,
+                Value<String?> appPackage = const Value.absent(),
+                Value<String?> appName = const Value.absent(),
+                Value<String?> title = const Value.absent(),
+                Value<String?> body = const Value.absent(),
+                Value<DateTime?> postedAt = const Value.absent(),
+                Value<bool> isTransaction = const Value.absent(),
+                Value<String?> rawJson = const Value.absent(),
+                required DateTime createdAt,
+                Value<int> rowid = const Value.absent(),
+              }) => LocalNotificationsCompanion.insert(
+                id: id,
+                userId: userId,
+                appPackage: appPackage,
+                appName: appName,
+                title: title,
+                body: body,
+                postedAt: postedAt,
+                isTransaction: isTransaction,
+                rawJson: rawJson,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LocalNotificationsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LocalNotificationsTable,
+      LocalNotification,
+      $$LocalNotificationsTableFilterComposer,
+      $$LocalNotificationsTableOrderingComposer,
+      $$LocalNotificationsTableAnnotationComposer,
+      $$LocalNotificationsTableCreateCompanionBuilder,
+      $$LocalNotificationsTableUpdateCompanionBuilder,
+      (
+        LocalNotification,
+        BaseReferences<
+          _$AppDatabase,
+          $LocalNotificationsTable,
+          LocalNotification
+        >,
+      ),
+      LocalNotification,
+      PrefetchHooks Function()
+    >;
 typedef $$SyncOutboxTableCreateCompanionBuilder =
     SyncOutboxCompanion Function({
       required String id,
@@ -2927,6 +3857,8 @@ class $AppDatabaseManager {
       $$LocalTransactionsTableTableManager(_db, _db.localTransactions);
   $$LocalCategoriesTableTableManager get localCategories =>
       $$LocalCategoriesTableTableManager(_db, _db.localCategories);
+  $$LocalNotificationsTableTableManager get localNotifications =>
+      $$LocalNotificationsTableTableManager(_db, _db.localNotifications);
   $$SyncOutboxTableTableManager get syncOutbox =>
       $$SyncOutboxTableTableManager(_db, _db.syncOutbox);
   $$SyncStateTableTableManager get syncState =>

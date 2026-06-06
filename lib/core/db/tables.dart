@@ -38,6 +38,26 @@ class LocalCategories extends Table {
   Set<Column> get primaryKey => {id};
 }
 
+/// Local mirror of the Supabase `notifications` table. Append-only and
+/// immutable (captured on Android, browsed everywhere) — no `deletedAt` and
+/// no `updatedAt`; the `createdAt` server insert time is the delta-pull
+/// watermark. `rawJson` stores the full payload as an encoded JSON string.
+class LocalNotifications extends Table {
+  TextColumn get id => text()();
+  TextColumn get userId => text()();
+  TextColumn get appPackage => text().nullable()();
+  TextColumn get appName => text().nullable()();
+  TextColumn get title => text().nullable()();
+  TextColumn get body => text().nullable()();
+  DateTimeColumn get postedAt => dateTime().nullable()();
+  BoolColumn get isTransaction => boolean().withDefault(const Constant(false))();
+  TextColumn get rawJson => text().nullable()();
+  DateTimeColumn get createdAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
 /// Pending local mutations to push to Supabase, drained oldest-first on sync.
 /// `op` is 'upsert' or 'delete'; `payload` is a JSON row snapshot for upserts.
 class SyncOutbox extends Table {
