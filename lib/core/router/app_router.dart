@@ -12,6 +12,7 @@ import '../../features/wallet/presentation/screens/wallet_dashboard_screen.dart'
 import '../../features/notifications/presentation/screens/notifications_screen.dart';
 import '../../features/notifications/presentation/screens/notification_detail_screen.dart';
 import '../../features/media_cleaner/presentation/screens/media_cleaner_screen.dart';
+import '../../features/media_cleaner/presentation/screens/media_delete_confirm_screen.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authStateProvider);
@@ -83,6 +84,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/media',
                 builder: (context, state) => const MediaCleanerScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'delete',
+                    builder: (context, state) =>
+                        const MediaDeleteConfirmScreen(),
+                  ),
+                ],
               ),
             ],
           ),

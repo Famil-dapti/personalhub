@@ -1,6 +1,10 @@
 # Project-state.md
 
 ## Current Phase
+**Phase 3 — Media Cleaner** ✅ **CODE COMPLETE (2026-06-06; on-device verify deferred).** Swipe-review
+of device photos + videos. See the Phase 3 section below for the full breakdown. Drift schemaVersion is
+now **4**. Supabase migration for the new `media_stats` table is written but **NOT yet deployed**.
+
 **Phase 2 — Notification Archiver** ✅ Phase 2A (UI/data) MERGED+LIVE; **Phase 2B (native capture)
 CODE COMPLETE + VERIFIED ON DEVICE** (uncommitted on `dev`). Captured notifications flow:
 Kotlin NotificationListenerService -> local buffer -> Dart drain on app open -> ingest (Drift +
@@ -52,6 +56,53 @@ re-verify deferred with the rest of Android testing):
 **Phase 1.2 — Offline queue (Drift)** ✅ CODE COMPLETE, COMMITTED, MERGED TO MAIN, DEPLOYED LIVE.
 Partially verified (launch + production wasm serving). Authenticated offline E2E (add -> persist ->
 sync) NOT yet runtime-verified — deferred to on-device (Android phone) test.
+
+## Phase 3 — Media Cleaner (2026-06-06, CODE COMPLETE; on-device verify deferred)
+
+Swipe-review device media to keep or delete. **Android/mobile-only**; web is a read-only stats view
+(no device file access). On-device verification is deferred to the **same parked Android test session**
+as the notification re-verify + Phase 1.2 offline E2E.
+
+**Decisions locked with the user:**
+- **Scope:** photos + videos, with a Tumu/Foto/Video filter.
+- **Swipe (flutter_card_swiper, 4-way):** Left=Delete, Right=Keep, Up=Favorite/Protect, Down=Later
+  (defer) — plus mirror action buttons + Undo (Geri al).
+- **Decisions are LOCAL-ONLY (Drift)**, keyed by `assetId + deviceId`, so a reviewed item is never
+  re-shown. Individual decision rows are **NEVER synced**.
+- **Only per-device AGGREGATE stats sync** to Supabase (new `media_stats` table): total / decided /
+  kept / deleted, shown on phones AND web (read-only). Reuses `deviceIdentityProvider` for attribution.
+- **Rich filter/sort over a LOCAL media index:** type, album/folder, date (newest/oldest), size
+  (largest first), screenshots-only, random; "undecided only" is the default queue.
+- **Indexing:** first-launch FULL scan + per-launch DELTA (new/removed). Background WorkManager
+  ("index while app closed") was **DEFERRED** — unreliable on the user's Xiaomi/MIUI (battery kill);
+  the on-launch delta covers the need.
+- **Deletion:** pending-delete queue -> batch confirm screen -> OS MediaStore trash dialog via
+  `PhotoManager.editor.deleteWithIds`; deleted assets drop from the index but the local decision row
+  persists (so cumulative deleted stats survive).
+
+**What was built:**
+- `features/media_cleaner/data/models/media_models.dart` — MediaAsset, MediaStats, enums.
+- `features/media_cleaner/data/media_scanner.dart` + `media_scanner_io.dart` + `media_scanner_web.dart`
+  — conditional import; `photo_manager` is isolated from the web build via `if (dart.library.io)`.
+- `features/media_cleaner/domain/media_filter.dart` — pure filter/sort engine.
+- `features/media_cleaner/presentation/providers/media_providers.dart` — deck, filters, stats, index
+  controller, `MediaCleanerController`.
+- `features/media_cleaner/presentation/screens/media_cleaner_screen.dart` (rewritten) +
+  `media_delete_confirm_screen.dart`.
+- `features/media_cleaner/presentation/widgets/` — media_card.dart, media_stats_panel.dart,
+  media_filter_sheet.dart, format_bytes.dart.
+- **Drift:** tables LocalMediaAssets, LocalMediaDecisions, LocalMediaStats added; **schemaVersion 3->4**
+  + onUpgrade creates the 3 tables (`core/db/tables.dart`, `app_database.dart`). Mappers + sync wired
+  (`kMediaStatsTable` pulled by `updated_at`). New route `/media/delete`.
+- **Android manifest:** READ_MEDIA_IMAGES, READ_MEDIA_VIDEO, ACCESS_MEDIA_LOCATION,
+  READ_EXTERNAL_STORAGE (maxSdk 32).
+- **pubspec:** `photo_manager ^3.9.0`, `flutter_card_swiper ^7.2.0` (drift/sqlite3 versions UNCHANGED —
+  web wasm still matches).
+- **Supabase migration:** `supabase/migrations/20260607090000_media_stats.sql` (media_stats table + RLS
+  + set_updated_at trigger). ⛔ **NOT yet applied to remote — pending deploy.**
+
+**Future note:** connect to Google Photos accounts later so the app can also review/act on cloud photos
+(recorded in Project-plan.md as a future phase).
 
 ## Status
 Phase 1.1 built, merged to main, and DEPLOYED. Web app live at
@@ -211,6 +262,9 @@ Three on-device/visual threads parked for one combined session:
 | 2026-06-06 | Keep Supabase (not Firebase) | Backend works; hosting is a separate layer; FCM can be added later for APK push |
 | 2026-06-06 | Custom domain deferred | GitHub gives no domain; nice free name needs host migration (pages.dev) or cheap domain. Stay on github.io for now |
 | 2026-06-06 | APK dist = GitHub Releases + in-app update check (Option B), deferred to end | Free, no Firebase, handles native changes; needs fixed CI keystore. Implement after super app feature-complete |
+| 2026-06-06 | Media decisions are LOCAL-ONLY (Drift, assetId+deviceId); only per-device AGGREGATE stats sync (media_stats) | Decisions are per-device, high-volume, and never need cross-device merge; syncing rows is waste. Aggregate stats give a cross-device dashboard cheaply |
+| 2026-06-06 | Media indexing = on-launch full + per-launch delta; background WorkManager DEFERRED | MIUI/Xiaomi battery kill makes background scans unreliable; on-launch delta covers new/removed media without the WorkManager complexity |
+| 2026-06-06 | photo_manager isolated via conditional import (`if (dart.library.io)`) | Keeps the web build green — photo_manager has no web support; web shows read-only stats only |
 
 ## Git Workflow
 - Always work on `dev` branch

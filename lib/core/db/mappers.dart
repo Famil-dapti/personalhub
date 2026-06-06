@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:drift/drift.dart';
 
+import '../../features/media_cleaner/data/models/media_models.dart';
 import '../../features/notifications/data/models/notification_model.dart';
 import '../../features/wallet/data/models/category_model.dart';
 import '../../features/wallet/data/models/transaction_model.dart';
@@ -47,6 +48,30 @@ NotificationItem notificationToDomain(LocalNotification r) => NotificationItem(
       deviceId: r.deviceId,
       deviceName: r.deviceName,
       createdAt: r.createdAt,
+    );
+
+MediaAsset mediaAssetToDomain(LocalMediaAsset r) => MediaAsset(
+      assetId: r.assetId,
+      deviceId: r.deviceId,
+      type: r.type == 'video' ? MediaType.video : MediaType.image,
+      sizeBytes: r.sizeBytes,
+      albumId: r.albumId,
+      albumName: r.albumName,
+      relativePath: r.relativePath,
+      width: r.width,
+      height: r.height,
+      durationSec: r.durationSec,
+      createdDate: r.createdDate,
+      title: r.title,
+    );
+
+MediaStats mediaStatsToDomain(LocalMediaStat r) => MediaStats(
+      deviceId: r.deviceId,
+      deviceName: r.deviceName,
+      total: r.total,
+      decided: r.decided,
+      kept: r.kept,
+      deleted: r.deleted,
     );
 
 // --- Supabase JSON -> Drift companion (delta pull / push echo) ------------
@@ -101,6 +126,20 @@ LocalNotificationsCompanion notificationCompanionFromRemote(
     deviceId: Value(j['device_id'] as String?),
     deviceName: Value(j['device_name'] as String?),
     createdAt: Value(DateTime.parse(j['created_at'] as String)),
+  );
+}
+
+LocalMediaStatsCompanion mediaStatsCompanionFromRemote(Map<String, dynamic> j) {
+  return LocalMediaStatsCompanion(
+    id: Value(j['id'] as String),
+    userId: Value(j['user_id'] as String),
+    deviceId: Value(j['device_id'] as String),
+    deviceName: Value(j['device_name'] as String?),
+    total: Value((j['total'] as int?) ?? 0),
+    decided: Value((j['decided'] as int?) ?? 0),
+    kept: Value((j['kept'] as int?) ?? 0),
+    deleted: Value((j['deleted'] as int?) ?? 0),
+    updatedAt: Value(DateTime.parse(j['updated_at'] as String)),
   );
 }
 

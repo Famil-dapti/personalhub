@@ -31,6 +31,8 @@ class SyncService {
       await _pullTable(kCategoriesTable);
       // Notifications are immutable; created_at is the monotonic watermark.
       await _pullTable(kNotificationsTable, watermarkColumn: 'created_at');
+      // Per-device media-cleanup aggregates (Phase 3); standard updated_at LWW.
+      await _pullTable(kMediaStatsTable);
     } finally {
       _running = false;
     }
@@ -118,6 +120,9 @@ class SyncService {
       case kCategoriesTable:
         return _db
             .upsertCategories(list.map(categoryCompanionFromRemote).toList());
+      case kMediaStatsTable:
+        return _db
+            .upsertMediaStats(list.map(mediaStatsCompanionFromRemote).toList());
       default:
         return _db.upsertNotifications(
             list.map(notificationCompanionFromRemote).toList());

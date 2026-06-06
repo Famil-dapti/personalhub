@@ -1,6 +1,6 @@
 # ai-index.md — Codebase Map
 
-Last updated: 2026-06-06 (Pre-Phase-3: dedup fix, clear-all, per-device attribution)
+Last updated: 2026-06-06 (Phase 3 Media Cleaner code-complete: schema v4, media_stats synced table)
 
 ## Project Root
 
@@ -63,20 +63,31 @@ Last updated: 2026-06-06 (Pre-Phase-3: dedup fix, clear-all, per-device attribut
 | `lib/features/notifications/presentation/widgets/permission_screen.dart` | Android notification-access request screen (deep-links to system settings) |
 | `lib/features/notifications/presentation/widgets/notification_visuals.dart` | Deterministic per-app brand color + AppBrandAvatar |
 
-### media_cleaner (Phase 3 — not yet built)
+### media_cleaner (Phase 3 — code complete; Android/mobile-only, web = read-only stats)
 | Path | Purpose |
 |---|---|
-| `lib/features/media_cleaner/presentation/screens/media_cleaner_screen.dart` | Placeholder |
+| `lib/features/media_cleaner/data/models/media_models.dart` | MediaAsset, MediaStats, enums (type/decision/sort) |
+| `lib/features/media_cleaner/data/media_scanner.dart` | Scanner interface + conditional import (`if (dart.library.io)`) isolating photo_manager from web |
+| `lib/features/media_cleaner/data/media_scanner_io.dart` | Mobile scanner: photo_manager full scan + per-launch delta (new/removed) |
+| `lib/features/media_cleaner/data/media_scanner_web.dart` | Web no-op scanner (no device file access; stats-only) |
+| `lib/features/media_cleaner/domain/media_filter.dart` | Pure filter/sort engine (type/album/date/size/screenshots/random; undecided-only default) |
+| `lib/features/media_cleaner/presentation/providers/media_providers.dart` | Deck, filters, stats, index controller, MediaCleanerController (record decision / undo / enqueue delete) |
+| `lib/features/media_cleaner/presentation/screens/media_cleaner_screen.dart` | Swipe deck (4-way) + filter + stats panel + Undo (route `/media`) |
+| `lib/features/media_cleaner/presentation/screens/media_delete_confirm_screen.dart` | Batch confirm of pending-delete queue -> OS MediaStore trash dialog (route `/media/delete`) |
+| `lib/features/media_cleaner/presentation/widgets/media_card.dart` | Swipe card: thumbnail + type/size badges |
+| `lib/features/media_cleaner/presentation/widgets/media_stats_panel.dart` | Per-device total/decided/kept/deleted counters |
+| `lib/features/media_cleaner/presentation/widgets/media_filter_sheet.dart` | Filter/sort bottom sheet |
+| `lib/features/media_cleaner/presentation/widgets/format_bytes.dart` | Human-readable byte formatter |
 
 ### offline-first (Phase 1.2 — Drift local DB + sync engine)
 | Path | Purpose |
 |---|---|
-| `lib/core/db/tables.dart` | Drift tables: LocalTransactions, LocalCategories (+updatedAt/deletedAt), LocalNotifications (append-only + deviceId/deviceName), SyncOutbox, SyncState |
-| `lib/core/db/app_database.dart` | AppDatabase (schemaVersion 3): reactive watch* reads, atomic write+outbox, watermark + upsert helpers, notificationExistsLike dedup + clearAllNotificationsLocal; cross-platform `driftDatabase()` open (web = relative wasm/worker URIs) |
+| `lib/core/db/tables.dart` | Drift tables: LocalTransactions, LocalCategories (+updatedAt/deletedAt), LocalNotifications (append-only + deviceId/deviceName), LocalMediaAssets, LocalMediaDecisions (assetId+deviceId, local-only), LocalMediaStats, SyncOutbox, SyncState |
+| `lib/core/db/app_database.dart` | AppDatabase (schemaVersion 4): reactive watch* reads, atomic write+outbox, watermark + upsert helpers, notificationExistsLike dedup + clearAllNotificationsLocal, media index/decision/stats helpers; onUpgrade v3->4 creates the 3 media tables; cross-platform `driftDatabase()` open (web = relative wasm/worker URIs) |
 | `lib/core/db/app_database.g.dart` | Generated drift code (committed; CI does not run build_runner) |
-| `lib/core/db/mappers.dart` | Drift row -> domain model; Supabase JSON -> Drift companion |
+| `lib/core/db/mappers.dart` | Drift row -> domain model; Supabase JSON -> Drift companion (incl. media_stats) |
 | `lib/core/db/database_provider.dart` | appDatabaseProvider (singleton AppDatabase) |
-| `lib/core/sync/sync_service.dart` | Push outbox (idempotent upsert / soft-delete) + delta pull (transactions/categories by updated_at, notifications by created_at watermark); LWW = server clock |
+| `lib/core/sync/sync_service.dart` | Push outbox (idempotent upsert / soft-delete) + delta pull (transactions/categories by updated_at, notifications by created_at, media_stats by updated_at watermark); LWW = server clock. Media decision rows are NEVER synced (local-only) |
 | `lib/core/sync/sync_providers.dart` | syncServiceProvider + syncBootstrapProvider (initial sync + connectivity_plus reconnect trigger) |
 
 ## Infrastructure
@@ -85,16 +96,17 @@ Last updated: 2026-06-06 (Pre-Phase-3: dedup fix, clear-all, per-device attribut
 |---|---|
 | `android/app/src/main/kotlin/com/personalhub/personalhub/NotificationArchiverService.kt` | NotificationListenerService: captures notifications -> SharedPreferences buffer (Phase 2B) |
 | `android/app/src/main/kotlin/com/personalhub/personalhub/MainActivity.kt` | MethodChannel `personalhub/notifications`: isPermissionGranted/openSettings/drainPending |
-| `android/app/src/main/AndroidManifest.xml` | INTERNET permission (release-build fix) + NotificationListenerService declaration |
+| `android/app/src/main/AndroidManifest.xml` | INTERNET permission (release-build fix) + NotificationListenerService declaration + media perms (READ_MEDIA_IMAGES, READ_MEDIA_VIDEO, ACCESS_MEDIA_LOCATION, READ_EXTERNAL_STORAGE maxSdk 32) |
 | `supabase/migrations/20260605213540_initial_schema.sql` | Creates transactions + notifications tables with RLS |
 | `supabase/migrations/20260606022924_categories.sql` | categories table + RLS + Turkish presets; transactions.category->category_id FK |
 | `supabase/migrations/20260606074518_offline_sync_columns.sql` | Adds updated_at (server trigger) + deleted_at tombstones + delta indexes to transactions/categories |
 | `supabase/migrations/20260606120000_notification_device_attribution.sql` | Adds device_id + device_name to notifications (which phone captured each one) |
+| `supabase/migrations/20260607090000_media_stats.sql` | media_stats table (per-device aggregate: total/decided/kept/deleted) + RLS + set_updated_at trigger. NOT yet deployed to remote |
 | `web/sqlite3.wasm`, `web/drift_worker.js` | Drift web runtime (version-matched: sqlite3 2.9.4, drift 2.28.2); served under /personalhub/ via base-href |
 | `.github/workflows/deploy-web.yml` | CI: push to main -> build Flutter web -> deploy to GitHub Pages (famil-dapti.github.io/personalhub) |
 | `.github/workflows/deploy-staging.yml` | CI: push to dev + migration change → supabase db push |
 | `.github/workflows/deploy-production.yml` | CI: push to main + migration change → supabase db push |
-| `pubspec.yaml` | Deps: supabase_flutter ^2.9, flutter_riverpod ^2.6.1, go_router ^15.1, google_fonts, fl_chart, intl, uuid, shared_preferences, drift + drift_flutter + sqlite3_flutter_libs + connectivity_plus (offline) |
+| `pubspec.yaml` | Deps: supabase_flutter ^2.9, flutter_riverpod ^2.6.1, go_router ^15.1, google_fonts, fl_chart, intl, uuid, shared_preferences, drift + drift_flutter + sqlite3_flutter_libs + connectivity_plus (offline), photo_manager ^3.9.0 + flutter_card_swiper ^7.2.0 (media cleaner; drift/sqlite3 unchanged) |
 | `build.yaml` | Codegen config: disables riverpod_generator (unused; crashes old analyzer on SDK 3.12), leaves only drift_dev |
 
 ## Navigation Routes
@@ -109,6 +121,7 @@ Last updated: 2026-06-06 (Pre-Phase-3: dedup fix, clear-all, per-device attribut
 | `/notifications` | NotificationsScreen (tab 1) | Yes |
 | `/notifications/detail` | NotificationDetailScreen | Yes |
 | `/media` | MediaCleanerScreen (tab 2) | Yes |
+| `/media/delete` | MediaDeleteConfirmScreen | Yes |
 
 ## Key Patterns
 - State: Riverpod `Provider` / `StreamProvider`. Wallet/category lists stream from Drift; writes go through plain controller classes (write to Drift + outbox, then kick sync). No `StateNotifier`, no `ChangeNotifier`.

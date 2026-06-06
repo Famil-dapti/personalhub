@@ -2,6 +2,17 @@
     <!-- Required in release builds for Supabase/network access. The debug and
          profile manifests declare this too, so debug runs masked this gap. -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Phase 3 Media Cleaner: read photos/videos to index + swipe-review.
+         Android 13+ uses the granular READ_MEDIA_* perms; older devices fall
+         back to READ_EXTERNAL_STORAGE (capped at API 32). ACCESS_MEDIA_LOCATION
+         lets photo_manager read original EXIF. Deletion goes through the system
+         MediaStore trash dialog (PhotoManager.editor.deleteWithIds) — no extra
+         write permission needed. -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO"/>
+    <uses-permission android:name="android.permission.ACCESS_MEDIA_LOCATION"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32"/>
     <application
         android:label="personalhub"
         android:name="${applicationName}"
