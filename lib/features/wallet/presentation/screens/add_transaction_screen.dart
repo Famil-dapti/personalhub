@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/utils/formatters.dart';
+import '../../../../core/widgets/app_feedback.dart';
 import '../../data/models/category_model.dart';
 import '../../data/models/transaction_model.dart';
 import '../providers/category_provider.dart';
@@ -178,9 +179,8 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
       description: description.isEmpty ? null : description,
     );
 
-    final error = await ref
-        .read(transactionsProvider.notifier)
-        .addTransaction(transaction);
+    final error =
+        await ref.read(transactionsControllerProvider).add(transaction);
 
     if (!mounted) return;
     if (error != null) {
@@ -190,6 +190,7 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
       });
       return;
     }
+    AppFeedback.success(context, 'Islem eklendi');
     context.pop();
   }
 }

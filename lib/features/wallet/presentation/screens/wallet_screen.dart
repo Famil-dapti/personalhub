@@ -3,7 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/supabase/supabase_service.dart';
-import '../providers/category_provider.dart';
+import '../../../../core/sync/sync_providers.dart';
+import '../../../../core/utils/formatters.dart';
+import '../../../../core/widgets/app_feedback.dart';
+import '../../../../core/widgets/app_spacing.dart';
+import '../../../../core/widgets/empty_state.dart';
+import '../../../../core/widgets/skeleton.dart';
+import '../../data/models/transaction_model.dart';
 import '../providers/wallet_provider.dart';
 import '../widgets/balance_card.dart';
 import '../widgets/transaction_tile.dart';
@@ -37,13 +43,9 @@ class WalletScreen extends ConsumerWidget {
         ],
       ),
       body: RefreshIndicator(
-        onRefresh: () async {
-          ref.invalidate(transactionsProvider);
-          ref.invalidate(categoriesProvider);
-          await ref.read(transactionsProvider.future);
-        },
+        onRefresh: () => ref.read(syncServiceProvider).syncAll(),
         child: transactions.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const _WalletLoading(),
           error: (e, _) => _ErrorView(message: e.toString()),
           data: (items) => _WalletBody(items: items, ref: ref),
         ),
@@ -57,36 +59,99 @@ class WalletScreen extends ConsumerWidget {
   }
 }
 
+class _WalletLoading extends StatelessWidget {
+  const _WalletLoading();
+
+  @override
+  Widget build(BuildContext context) {
+    return Skeleton(
+      child: ListView(
+        physics: const NeverScrollableScrollPhysics(),
+        children: const [
+          Card(
+            margin: EdgeInsets.all(AppSpacing.lg),
+            child: Padding(
+              padding: EdgeInsets.all(AppSpacing.xl),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SkeletonBox(width: 80, height: 12),
+                  AppSpacing.gapMd,
+                  SkeletonBox(width: 180, height: 28),
+                  AppSpacing.gapXl,
+                  SkeletonBox(height: 14),
+                ],
+              ),
+            ),
+          ),
+          SkeletonListTile(),
+          SkeletonListTile(),
+          SkeletonListTile(),
+          SkeletonListTile(),
+        ],
+      ),
+    );
+  }
+}
+
 class _WalletBody extends StatelessWidget {
   const _WalletBody({required this.items, required this.ref});
 
-  final List items;
+  final List<Transaction> items;
   final WidgetRef ref;
 
   @override
   Widget build(BuildContext context) {
+    if (items.isEmpty) {
+      return ListView(
+        children: [
+          const BalanceCard(),
+          EmptyState(
+            icon: Icons.receipt_long_outlined,
+            title: 'Henuz islem yok',
+            message: 'Ilk gelir veya giderini eklemek icin asagidaki butona dokun.',
+          ),
+        ],
+      );
+    }
+
     return ListView(
       children: [
         const BalanceCard(),
-        if (items.isEmpty)
-          const Padding(
-            padding: EdgeInsets.all(48),
-            child: Center(child: Text('Henuz islem yok')),
-          )
-        else
-          ...items.map(
-            (t) => TransactionTile(
-              transaction: t,
-              onDelete: () => _confirmDelete(context, ref, t.id),
-            ),
-          ),
-        const SizedBox(height: 80),
+        ..._buildGroupedRows(context),
+        AppSpacing.fabClearance,
       ],
     );
   }
 
-  Future<void> _confirmDelete(
-      BuildContext context, WidgetRef ref, String id) async {
+  // Groups transactions into day sections, preserving the repository's
+  // newest-first order. Each section gets a header followed by its tiles.
+  List<Widget> _buildGroupedRows(BuildContext context) {
+    final rows = <Widget>[];
+    DateTime? currentDay;
+    for (final t in items) {
+      final day = dayKey(t.createdAt);
+      if (currentDay == null || day != currentDay) {
+        currentDay = day;
+        rows.add(_DayHeader(label: formatDayHeader(t.createdAt)));
+      }
+      rows.add(
+        Dismissible(
+          key: ValueKey(t.id),
+          direction: DismissDirection.endToStart,
+          background: const _DeleteBackground(),
+          confirmDismiss: (_) => _confirmDelete(context, t.id),
+          child: TransactionTile(
+            transaction: t,
+            onDelete: () => _confirmDelete(context, t.id),
+          ),
+        ),
+      );
+    }
+    return rows;
+  }
+
+  Future<bool> _confirmDelete(BuildContext context, String id) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -104,8 +169,57 @@ class _WalletBody extends StatelessWidget {
         ],
       ),
     );
-    if (confirmed != true) return;
-    await ref.read(transactionsProvider.notifier).removeTransaction(id);
+    if (confirmed == true && context.mounted) {
+      await _delete(context, id);
+      return true;
+    }
+    return false;
+  }
+
+  Future<void> _delete(BuildContext context, String id) async {
+    final error =
+        await ref.read(transactionsControllerProvider).remove(id);
+    if (!context.mounted) return;
+    if (error == null) {
+      AppFeedback.success(context, 'Islem silindi');
+    } else {
+      AppFeedback.error(context, 'Silinemedi: $error');
+    }
+  }
+}
+
+class _DayHeader extends StatelessWidget {
+  const _DayHeader({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+          AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, AppSpacing.sm),
+      child: Text(
+        label,
+        style: theme.textTheme.labelLarge
+            ?.copyWith(color: theme.colorScheme.primary),
+      ),
+    );
+  }
+}
+
+class _DeleteBackground extends StatelessWidget {
+  const _DeleteBackground();
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      alignment: Alignment.centerRight,
+      color: scheme.errorContainer,
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
+      child: Icon(Icons.delete_outline, color: scheme.onErrorContainer),
+    );
   }
 }
 
@@ -118,10 +232,11 @@ class _ErrorView extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListView(
       children: [
-        const SizedBox(height: 120),
-        const Icon(Icons.error_outline, size: 48),
-        const SizedBox(height: 12),
-        Center(child: Text('Hata: $message')),
+        EmptyState(
+          icon: Icons.cloud_off_outlined,
+          title: 'Bir sorun olustu',
+          message: message,
+        ),
       ],
     );
   }

@@ -1,8 +1,9 @@
 # Project-state.md
 
 ## Current Phase
-**Phase 1.1 — Core Wallet (online-only)** ✅ COMPLETE & LIVE.
-Next: UX/UI polish + **Phase 1.2 — offline queue** (both in a new session).
+**Phase 1.2 — Offline queue (Drift)** ✅ CODE COMPLETE (analyze clean, web build OK, migration live on remote).
+Parallel: Claude Design brief delivered (awaiting returned mockups to implement).
+Next: manual end-to-end offline test on device/web, then commit + deploy.
 
 ## Status
 Phase 1.1 built, merged to main, and DEPLOYED. Web app live at
@@ -42,15 +43,38 @@ Nothing. Phase 1.1 done and deployed. Session closed for handoff to a new chat.
 
 ## Next Task — new session (two tracks)
 
-**Track A — UX/UI polish (wallet)**
-- Review wallet/add/categories/dashboard screens for spacing, empty states, loading skeletons
-- Better balance card visual; transaction list grouping by date; nicer category chips
-- Consistent Turkish copy; error/snackbar feedback on add/delete
-- Consider dark mode pass
+**Track A — UX/UI polish (wallet)** ✅ DONE (2026-06-06)
+- New shared primitives: `core/widgets/{app_spacing,app_feedback,skeleton,empty_state}.dart`
+- Date-grouped transaction list (Bugun/Dun/date headers) + swipe-to-delete (Dismissible)
+- Loading skeletons on wallet/categories/dashboard; friendly empty states everywhere
+- Success/error snackbars on add/delete (transaction + category)
+- Category delete confirmation dialog; add-category live preview chip + drag handle
+- Bar-chart income/expense legend; spacing tokens replace magic numbers
+- Theme already had light+dark; new widgets are all colorScheme-driven (dark-safe)
 
-**Track B — Phase 1.2: offline queue** (see Project-plan.md Phase 1.2)
-- Local cache (sqflite/drift or Hive); write queue for offline mutations; sync on reconnect
-- Conflict handling (last-write-wins per record); optimistic UI
+**Design handoff (in progress)**
+- `docs/design/claude-design-brief.md` — full project brief for Claude Design to produce
+  6 mockups: {Wallet, Notifications, Media} x {phone, desktop}. User uploads brief, returns
+  outputs, Claude implements. Track B starts in parallel after user approval.
+
+**Track B — Phase 1.2: offline queue (Drift)** ✅ CODE COMPLETE (2026-06-06)
+- Engine: **Drift** + drift_flutter; local DB = source of truth, UI streams from Drift
+- New: `core/db/` (tables, AppDatabase, mappers, provider) + `core/sync/` (SyncService,
+  providers). Offline-first repos replaced old Supabase-direct repositories (deleted).
+- Outbox write queue + delta pull by `updated_at` watermark; soft-delete tombstones;
+  LWW anchored to server clock (Postgres `set_updated_at` trigger).
+- Sync triggers: app start, connectivity_plus reconnect, after every local write.
+- Client-side UUIDs (uuid v4) so rows have stable ids offline.
+- Migration `20260606074518_offline_sync_columns.sql` **applied to remote** (additive,
+  idempotent; verified updated_at + deleted_at on transactions + categories).
+- Web: `web/sqlite3.wasm` (2.9.4) + `web/drift_worker.js` (2.28.2) committed; relative
+  URIs resolve under `/personalhub/` base-href. GitHub Pages = IndexedDB (no OPFS headers).
+- `flutter analyze` clean; `flutter build web` OK; codegen `app_database.g.dart` committed.
+
+**Phase 1.2 — remaining before done**
+- Manual end-to-end test: add/delete offline, reconnect, confirm sync both directions + multi-device.
+- Commit to `dev` and deploy (user controls commit/push).
+- Known: `unsafeIndexedDb` not safe across multiple simultaneously-writing tabs (single-user, low risk).
 
 **Deferred / backlog**
 - Custom domain: migrate host (Cloudflare Pages `personalhub.pages.dev`) or buy cheap domain for a nicer URL

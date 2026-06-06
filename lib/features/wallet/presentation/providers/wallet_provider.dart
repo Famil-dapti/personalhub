@@ -1,40 +1,75 @@
+import 'package:drift/drift.dart' show Value;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uuid/uuid.dart';
 
+import '../../../../core/db/app_database.dart';
+import '../../../../core/db/database_provider.dart';
+import '../../../../core/db/mappers.dart';
 import '../../../../core/supabase/supabase_service.dart';
+import '../../../../core/sync/sync_providers.dart';
 import '../../data/models/transaction_model.dart';
-import '../../data/repositories/transaction_repository.dart';
 
-final transactionRepositoryProvider = Provider<TransactionRepository>((ref) {
-  return TransactionRepository(ref.watch(supabaseClientProvider));
+// Reactive transaction list straight from the local Drift store (offline-first).
+final transactionsProvider = StreamProvider<List<Transaction>>((ref) {
+  final db = ref.watch(appDatabaseProvider);
+  return db.watchTransactions().map(
+        (rows) => rows.map(transactionToDomain).toList(),
+      );
 });
 
-final transactionsProvider =
-    AsyncNotifierProvider<TransactionsNotifier, List<Transaction>>(
-  TransactionsNotifier.new,
-);
+final transactionsControllerProvider = Provider<TransactionsController>((ref) {
+  return TransactionsController(ref);
+});
 
-class TransactionsNotifier extends AsyncNotifier<List<Transaction>> {
-  @override
-  Future<List<Transaction>> build() async {
-    return ref.read(transactionRepositoryProvider).fetchAll();
-  }
+/// Writes land in Drift + the sync outbox first (instant, offline-capable),
+/// then opportunistically kick a sync. Returns an error string on failure.
+class TransactionsController {
+  TransactionsController(this._ref);
 
-  Future<String?> addTransaction(Transaction transaction) async {
+  final Ref _ref;
+  static const _uuid = Uuid();
+
+  Future<String?> add(Transaction t) async {
     try {
-      await ref.read(transactionRepositoryProvider).create(transaction);
-      ref.invalidateSelf();
-      await future;
+      final userId = _ref.read(supabaseClientProvider).auth.currentUser!.id;
+      final id = _uuid.v4();
+      final row = LocalTransactionsCompanion.insert(
+        id: id,
+        userId: userId,
+        amount: t.amount,
+        createdAt: t.createdAt,
+        updatedAt: DateTime.now(),
+        currency: Value(t.currency),
+        categoryId: Value(t.categoryId),
+        description: Value(t.description),
+        source: Value(t.source),
+        notificationId: Value(t.notificationId),
+      );
+      final payload = {
+        'id': id,
+        'user_id': userId,
+        'amount': t.amount,
+        'currency': t.currency,
+        'category_id': t.categoryId,
+        'description': t.description,
+        'source': t.source,
+        'notification_id': t.notificationId,
+        'created_at': t.createdAt.toIso8601String(),
+      };
+      await _ref
+          .read(appDatabaseProvider)
+          .enqueueUpsertTransaction(row, payload);
+      _ref.read(syncServiceProvider).syncAll();
       return null;
     } on Exception catch (e) {
       return e.toString();
     }
   }
 
-  Future<String?> removeTransaction(String id) async {
+  Future<String?> remove(String id) async {
     try {
-      await ref.read(transactionRepositoryProvider).delete(id);
-      ref.invalidateSelf();
-      await future;
+      await _ref.read(appDatabaseProvider).enqueueDeleteTransaction(id);
+      _ref.read(syncServiceProvider).syncAll();
       return null;
     } on Exception catch (e) {
       return e.toString();
@@ -65,7 +100,8 @@ final walletSummaryProvider = Provider<WalletSummary>((ref) {
 
   for (final t in transactions) {
     balance += t.amount;
-    final inMonth = t.createdAt.year == now.year && t.createdAt.month == now.month;
+    final inMonth =
+        t.createdAt.year == now.year && t.createdAt.month == now.month;
     if (!inMonth) continue;
     if (t.isIncome) {
       monthIncome += t.amount;

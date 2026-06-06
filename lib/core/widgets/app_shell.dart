@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-class AppShell extends StatelessWidget {
+import '../sync/sync_providers.dart';
+
+class AppShell extends ConsumerWidget {
   const AppShell({super.key, required this.navigationShell});
 
   final StatefulNavigationShell navigationShell;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Start background sync for the authenticated session and keep it alive.
+    ref.watch(syncBootstrapProvider);
+
     return Scaffold(
       body: navigationShell,
       bottomNavigationBar: NavigationBar(

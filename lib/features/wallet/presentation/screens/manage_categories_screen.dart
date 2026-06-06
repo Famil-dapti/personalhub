@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/widgets/app_feedback.dart';
+import '../../../../core/widgets/app_spacing.dart';
+import '../../../../core/widgets/empty_state.dart';
+import '../../../../core/widgets/skeleton.dart';
 import '../../data/models/category_model.dart';
 import '../providers/category_provider.dart';
 import '../widgets/category_visuals.dart';
@@ -15,8 +19,12 @@ class ManageCategoriesScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Kategoriler')),
       body: categories.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Hata: $e')),
+        loading: () => const _CategoriesLoading(),
+        error: (e, _) => EmptyState(
+          icon: Icons.cloud_off_outlined,
+          title: 'Bir sorun olustu',
+          message: e.toString(),
+        ),
         data: (items) {
           final expenses =
               items.where((c) => c.kind == CategoryKind.expense).toList();
@@ -25,10 +33,10 @@ class ManageCategoriesScreen extends ConsumerWidget {
           return ListView(
             children: [
               _SectionHeader(title: 'Gider Kategorileri'),
-              ...expenses.map((c) => _CategoryRow(category: c)),
+              ..._sectionRows(expenses),
               _SectionHeader(title: 'Gelir Kategorileri'),
-              ...incomes.map((c) => _CategoryRow(category: c)),
-              const SizedBox(height: 80),
+              ..._sectionRows(incomes),
+              AppSpacing.fabClearance,
             ],
           );
         },
@@ -41,11 +49,46 @@ class ManageCategoriesScreen extends ConsumerWidget {
     );
   }
 
+  List<Widget> _sectionRows(List<Category> items) {
+    if (items.isEmpty) {
+      return const [
+        Padding(
+          padding: EdgeInsets.fromLTRB(AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.sm),
+          child: Text('Henuz kategori yok'),
+        ),
+      ];
+    }
+    return items.map((c) => _CategoryRow(category: c)).toList();
+  }
+
   Future<void> _openAddSheet(BuildContext context, WidgetRef ref) async {
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
+      showDragHandle: true,
       builder: (_) => const _AddCategorySheet(),
+    );
+  }
+}
+
+class _CategoriesLoading extends StatelessWidget {
+  const _CategoriesLoading();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Skeleton(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.xl, AppSpacing.lg, AppSpacing.sm),
+            child: SkeletonBox(width: 160, height: 14),
+          ),
+          SkeletonListTile(),
+          SkeletonListTile(),
+          SkeletonListTile(),
+        ],
+      ),
     );
   }
 }
@@ -59,7 +102,8 @@ class _SectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
+      padding: const EdgeInsets.fromLTRB(
+          AppSpacing.lg, AppSpacing.xl, AppSpacing.lg, AppSpacing.sm),
       child: Text(
         title,
         style: theme.textTheme.titleSmall
@@ -89,11 +133,40 @@ class _CategoryRow extends ConsumerWidget {
           ? null
           : IconButton(
               icon: const Icon(Icons.delete_outline),
-              onPressed: () => ref
-                  .read(categoriesProvider.notifier)
-                  .removeCategory(category.id),
+              tooltip: 'Sil',
+              onPressed: () => _confirmDelete(context, ref),
             ),
     );
+  }
+
+  Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Kategoriyi sil'),
+        content: Text('"${category.name}" kategorisi silinsin mi?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Vazgec'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Sil'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+
+    final error =
+        await ref.read(categoriesControllerProvider).remove(category.id);
+    if (!context.mounted) return;
+    if (error == null) {
+      AppFeedback.success(context, 'Kategori silindi');
+    } else {
+      AppFeedback.error(context, 'Silinemedi: $error');
+    }
   }
 }
 
@@ -118,10 +191,26 @@ class _AddCategorySheetState extends ConsumerState<_AddCategorySheet> {
   String? _error;
 
   @override
+  void initState() {
+    super.initState();
+    // Live-update the preview chip as the user types the name.
+    _nameController.addListener(() => setState(() {}));
+  }
+
+  @override
   void dispose() {
     _nameController.dispose();
     super.dispose();
   }
+
+  Category get _draft => Category(
+        id: '',
+        userId: '',
+        name: _nameController.text.trim(),
+        kind: _kind,
+        icon: _icon,
+        color: _color,
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -129,14 +218,17 @@ class _AddCategorySheetState extends ConsumerState<_AddCategorySheet> {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
     return Padding(
-      padding: EdgeInsets.fromLTRB(16, 16, 16, bottomInset + 16),
+      padding: EdgeInsets.fromLTRB(
+          AppSpacing.lg, 0, AppSpacing.lg, bottomInset + AppSpacing.lg),
       child: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Yeni Kategori', style: theme.textTheme.titleLarge),
-            const SizedBox(height: 16),
+            AppSpacing.gapLg,
+            Center(child: _CategoryPreview(category: _draft)),
+            AppSpacing.gapLg,
             SegmentedButton<CategoryKind>(
               segments: const [
                 ButtonSegment(value: CategoryKind.expense, label: Text('Gider')),
@@ -145,19 +237,20 @@ class _AddCategorySheetState extends ConsumerState<_AddCategorySheet> {
               selected: {_kind},
               onSelectionChanged: (s) => setState(() => _kind = s.first),
             ),
-            const SizedBox(height: 16),
+            AppSpacing.gapLg,
             TextField(
               controller: _nameController,
+              textCapitalization: TextCapitalization.sentences,
               decoration: const InputDecoration(
                 labelText: 'Kategori adi',
                 border: OutlineInputBorder(),
               ),
             ),
-            const SizedBox(height: 16),
+            AppSpacing.gapLg,
             Text('Ikon', style: theme.textTheme.labelLarge),
-            const SizedBox(height: 8),
+            AppSpacing.gapSm,
             Wrap(
-              spacing: 8,
+              spacing: AppSpacing.sm,
               children: selectableIconNames.map((name) {
                 final selected = name == _icon;
                 return ChoiceChip(
@@ -167,11 +260,11 @@ class _AddCategorySheetState extends ConsumerState<_AddCategorySheet> {
                 );
               }).toList(),
             ),
-            const SizedBox(height: 16),
+            AppSpacing.gapLg,
             Text('Renk', style: theme.textTheme.labelLarge),
-            const SizedBox(height: 8),
+            AppSpacing.gapSm,
             Wrap(
-              spacing: 8,
+              spacing: AppSpacing.sm,
               children: _palette.map((hex) {
                 final selected = hex == _color;
                 final color = categoryColor(
@@ -191,14 +284,21 @@ class _AddCategorySheetState extends ConsumerState<_AddCategorySheet> {
               }).toList(),
             ),
             if (_error != null) ...[
-              const SizedBox(height: 12),
+              AppSpacing.gapMd,
               Text('Hata: $_error',
                   style: TextStyle(color: theme.colorScheme.error)),
             ],
-            const SizedBox(height: 20),
-            FilledButton(
+            AppSpacing.gapXl,
+            FilledButton.icon(
               onPressed: _saving ? null : _submit,
-              child: const Text('Kaydet'),
+              icon: _saving
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.check),
+              label: const Text('Kaydet'),
             ),
           ],
         ),
@@ -218,17 +318,8 @@ class _AddCategorySheetState extends ConsumerState<_AddCategorySheet> {
       _error = null;
     });
 
-    final category = Category(
-      id: '',
-      userId: '',
-      name: name,
-      kind: _kind,
-      icon: _icon,
-      color: _color,
-    );
-
     final error =
-        await ref.read(categoriesProvider.notifier).addCategory(category);
+        await ref.read(categoriesControllerProvider).add(_draft);
 
     if (!mounted) return;
     if (error != null) {
@@ -238,6 +329,28 @@ class _AddCategorySheetState extends ConsumerState<_AddCategorySheet> {
       });
       return;
     }
+    AppFeedback.success(context, 'Kategori eklendi');
     Navigator.of(context).pop();
+  }
+}
+
+/// Live preview of the category being created (icon + color + name).
+class _CategoryPreview extends StatelessWidget {
+  const _CategoryPreview({required this.category});
+
+  final Category category;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final color = categoryColor(category, theme.colorScheme.primary);
+    final name = category.name.isEmpty ? 'Onizleme' : category.name;
+    return Chip(
+      avatar: CircleAvatar(
+        backgroundColor: color.withValues(alpha: 0.15),
+        child: Icon(categoryIcon(category), color: color, size: 18),
+      ),
+      label: Text(name),
+    );
   }
 }

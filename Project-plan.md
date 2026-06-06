@@ -95,11 +95,12 @@ All tables: RLS enabled, `user_id = auth.uid()` policy.
 - [ ] Charts (fl_chart): category pie + monthly trend
 - Single currency (AZN). Online-only — requires connection.
 
-**Phase 1.2 — Offline queue (separate session)**
-- [ ] Local cache (sqflite/drift or Hive)
-- [ ] Write queue: offline mutations stored, synced on reconnect
-- [ ] Conflict handling (last-write-wins per record)
-- [ ] Optimistic UI updates
+**Phase 1.2 — Offline queue (Drift)** — code complete 2026-06-06
+- [x] Local cache: **Drift** (typed SQL, web/WASM, Riverpod streams) — chosen over Hive (relational FK) and PowerSync (paid cloud, overkill)
+- [x] Write queue: `SyncOutbox` drained oldest-first on reconnect (idempotent upserts + soft-delete)
+- [x] Conflict handling: last-write-wins anchored to server clock (`set_updated_at` trigger) + `deleted_at` tombstones
+- [x] Optimistic UI updates: writes hit Drift first, UI streams from Drift, sync runs in background
+- [ ] Manual end-to-end verification (offline add/delete -> reconnect -> bidirectional sync)
 
 ### Phase 2 — Notification Archiver
 - [ ] Android NotificationListenerService (Kotlin)
