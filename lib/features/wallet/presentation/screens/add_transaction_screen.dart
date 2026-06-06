@@ -7,12 +7,16 @@ import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/app_feedback.dart';
 import '../../data/models/category_model.dart';
 import '../../data/models/transaction_model.dart';
+import '../models/transaction_prefill.dart';
 import '../providers/category_provider.dart';
 import '../providers/wallet_provider.dart';
 import '../widgets/category_visuals.dart';
 
 class AddTransactionScreen extends ConsumerStatefulWidget {
-  const AddTransactionScreen({super.key});
+  const AddTransactionScreen({super.key, this.prefill});
+
+  /// Seed values when opened from a notification (null = manual add).
+  final TransactionPrefill? prefill;
 
   @override
   ConsumerState<AddTransactionScreen> createState() =>
@@ -30,6 +34,22 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
   bool _saving = false;
   String? _error;
 
+  bool get _isDraftCommit => widget.prefill?.existingTransactionId != null;
+
+  @override
+  void initState() {
+    super.initState();
+    final p = widget.prefill;
+    if (p == null) return;
+    if (p.amountMagnitude != null) {
+      _amountController.text = p.amountMagnitude!.toStringAsFixed(2);
+    }
+    if (p.kind != null) _kind = p.kind!;
+    if (p.description != null && p.description!.isNotEmpty) {
+      _descriptionController.text = p.description!;
+    }
+  }
+
   @override
   void dispose() {
     _amountController.dispose();
@@ -44,7 +64,7 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
     final options = categories.where((c) => c.kind == _kind).toList();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Islem Ekle')),
+      appBar: AppBar(title: Text(_appBarTitle)),
       body: Form(
         key: _formKey,
         child: ListView(
@@ -169,18 +189,25 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
     final magnitude = _parseAmount(_amountController.text)!;
     final signed = _kind == CategoryKind.expense ? -magnitude : magnitude;
     final description = _descriptionController.text.trim();
+    final prefill = widget.prefill;
 
     final transaction = Transaction(
-      id: '',
+      id: prefill?.existingTransactionId ?? '',
       userId: '',
       amount: signed,
       createdAt: _date,
       categoryId: _categoryId,
       description: description.isEmpty ? null : description,
+      source: prefill?.notificationId != null ? 'notification' : 'manual',
+      notificationId: prefill?.notificationId,
     );
 
-    final error =
-        await ref.read(transactionsControllerProvider).add(transaction);
+    final controller = ref.read(transactionsControllerProvider);
+    // Committing a pending draft upserts the same row (pending -> false);
+    // a fresh add inserts a new row.
+    final error = _isDraftCommit
+        ? await controller.update(transaction)
+        : await controller.add(transaction);
 
     if (!mounted) return;
     if (error != null) {
@@ -190,8 +217,14 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
       });
       return;
     }
-    AppFeedback.success(context, 'Islem eklendi');
+    AppFeedback.success(context, _isDraftCommit ? 'Islem onaylandi' : 'Islem eklendi');
     context.pop();
+  }
+
+  String get _appBarTitle {
+    if (_isDraftCommit) return 'Taslagi Onayla';
+    if (widget.prefill?.notificationId != null) return 'Cuzdana Ekle';
+    return 'Islem Ekle';
   }
 }
 

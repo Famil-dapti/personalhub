@@ -33,6 +33,8 @@ class SyncService {
       await _pullTable(kNotificationsTable, watermarkColumn: 'created_at');
       // Per-device media-cleanup aggregates (Phase 3); standard updated_at LWW.
       await _pullTable(kMediaStatsTable);
+      // Per-user app settings (Phase 4 Groq key); standard updated_at LWW.
+      await _pullTable(kUserSettingsTable);
     } finally {
       _running = false;
     }
@@ -123,6 +125,9 @@ class SyncService {
       case kMediaStatsTable:
         return _db
             .upsertMediaStats(list.map(mediaStatsCompanionFromRemote).toList());
+      case kUserSettingsTable:
+        return _db.upsertUserSettings(
+            list.map(userSettingsCompanionFromRemote).toList());
       default:
         return _db.upsertNotifications(
             list.map(notificationCompanionFromRemote).toList());

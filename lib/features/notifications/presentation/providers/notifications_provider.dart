@@ -7,7 +7,11 @@ import '../../../../core/db/database_provider.dart';
 import '../../../../core/db/mappers.dart';
 import '../../../../core/supabase/supabase_service.dart';
 import '../../../../core/sync/sync_providers.dart';
+import '../../../wallet/data/models/transaction_model.dart';
+import '../../../wallet/presentation/providers/wallet_provider.dart';
 import '../../data/models/notification_model.dart';
+import '../../domain/notification_parser.dart';
+import '../../domain/package_templates.dart';
 
 // Special filter sentinels; any other value is a literal app name.
 const String kFilterAll = 'all';
@@ -145,11 +149,45 @@ class NotificationsController {
         deviceName: n.deviceName,
       ).toInsert(userId);
       await db.enqueueUpsertNotification(row, payload);
+      // Native capture path only (ingest never runs for pulled rows), so a draft
+      // is derived exactly once, on the phone that captured the SMS.
+      await _maybeAutoRouteSms(id, n, db);
       _ref.read(syncServiceProvider).syncAll();
       return null;
     } on Exception catch (e) {
       return e.toString();
     }
+  }
+
+  // SMS rule (Phase 4): an SMS-app notification whose body carries an "NN.NN"
+  // amount becomes a cancelable pending draft in the wallet. Mis-routes are
+  // trivially cancelable, so the gate is intentionally permissive.
+  Future<void> _maybeAutoRouteSms(
+      String notificationId, NotificationItem n, AppDatabase db) async {
+    if (!kSmsPackages.contains(n.appPackage)) return;
+    final body = n.body ?? '';
+    if (body.isEmpty) return;
+    // Strip date/time noise first so "06.06.2026" / "14:32" never satisfy the
+    // NN.NN gate, then require an amount with exactly two decimals.
+    final gate = body
+        .replaceAll(RegExp(r'\d{1,4}[./-]\d{1,2}[./-]\d{1,4}'), ' ')
+        .replaceAll(RegExp(r'\d{1,2}:\d{2}(?::\d{2})?'), ' ');
+    if (!RegExp(r'\d+\.\d{2}').hasMatch(gate)) return;
+    if (await db.transactionExistsForNotification(notificationId)) return;
+
+    final parsed = parseAmountLenient(n.title, body);
+    if (parsed == null) return;
+    final draft = Transaction(
+      id: '',
+      userId: '',
+      amount: parsed.signedAmount,
+      createdAt: n.postedAt ?? n.createdAt,
+      description: (n.title?.isNotEmpty ?? false) ? n.title : body,
+      source: 'notification',
+      notificationId: notificationId,
+      pending: true,
+    );
+    await _ref.read(transactionsControllerProvider).add(draft);
   }
 
   /// Deletes every archived notification — remotely (frees Supabase space) then

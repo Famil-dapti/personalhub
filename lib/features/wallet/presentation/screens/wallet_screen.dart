@@ -9,7 +9,9 @@ import '../../../../core/widgets/app_feedback.dart';
 import '../../../../core/widgets/app_spacing.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../../../../core/widgets/skeleton.dart';
+import '../../data/models/category_model.dart';
 import '../../data/models/transaction_model.dart';
+import '../models/transaction_prefill.dart';
 import '../providers/wallet_provider.dart';
 import '../widgets/balance_card.dart';
 import '../widgets/transaction_tile.dart';
@@ -144,11 +146,26 @@ class _WalletBody extends StatelessWidget {
           child: TransactionTile(
             transaction: t,
             onDelete: () => _confirmDelete(context, t.id),
+            // Tapping a draft opens the pre-filled form; saving commits it.
+            onTap: t.pending ? () => _editDraft(context, t) : null,
           ),
         ),
       );
     }
     return rows;
+  }
+
+  void _editDraft(BuildContext context, Transaction t) {
+    context.push(
+      '/wallet/add',
+      extra: TransactionPrefill(
+        existingTransactionId: t.id,
+        amountMagnitude: t.amount.abs(),
+        kind: t.isIncome ? CategoryKind.income : CategoryKind.expense,
+        description: t.description,
+        notificationId: t.notificationId,
+      ),
+    );
   }
 
   Future<bool> _confirmDelete(BuildContext context, String id) async {

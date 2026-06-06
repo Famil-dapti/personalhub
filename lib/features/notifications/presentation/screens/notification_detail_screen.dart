@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
-import '../../../../core/widgets/app_feedback.dart';
 import '../../../../core/widgets/app_spacing.dart';
+import '../../../wallet/data/models/category_model.dart';
+import '../../../wallet/presentation/models/transaction_prefill.dart';
+import '../../data/models/notification_model.dart';
+import '../../domain/parsed_transaction.dart';
+import '../providers/extractor_provider.dart';
 import '../providers/notifications_provider.dart';
 import 'notifications_screen.dart';
 
@@ -23,12 +28,41 @@ class NotificationDetailScreen extends ConsumerWidget {
               padding: const EdgeInsets.all(AppSpacing.xl),
               child: NotificationDetailBody(
                 item: item,
-                onCreateTransaction: () => AppFeedback.success(
-                  context,
-                  'Cuzdan entegrasyonu sonraki asamada gelecek',
-                ),
+                onCreateTransaction: () => _createTransaction(context, ref, item),
               ),
             ),
     );
   }
+}
+
+/// Runs the hybrid extractor (regex, then Groq if a key is set) and opens the
+/// pre-filled, editable add-transaction form. A short modal spinner covers the
+/// AI round-trip; regex hits are instant.
+Future<void> _createTransaction(
+  BuildContext context,
+  WidgetRef ref,
+  NotificationItem item,
+) async {
+  showDialog<void>(
+    context: context,
+    barrierDismissible: false,
+    builder: (_) => const Center(child: CircularProgressIndicator()),
+  );
+  final parsed = await ref.read(transactionExtractorProvider).extract(item);
+  if (context.mounted) Navigator.of(context).pop(); // close spinner
+  if (!context.mounted) return;
+
+  context.push(
+    '/wallet/add',
+    extra: TransactionPrefill(
+      amountMagnitude: parsed?.amountMagnitude,
+      kind: parsed == null
+          ? null
+          : (parsed.direction == TxnDirection.income
+              ? CategoryKind.income
+              : CategoryKind.expense),
+      description: (item.title?.isNotEmpty ?? false) ? item.title : item.body,
+      notificationId: item.id,
+    ),
+  );
 }

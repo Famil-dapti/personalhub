@@ -1,24 +1,29 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/widgets/app_spacing.dart';
+import '../../domain/parsed_transaction.dart';
 
-/// Highlighted card shown on a notification flagged as a payment. Amount and
-/// category parsing + the actual "add to wallet" link are Phase 4 work, so the
-/// action is present on phone but explains that integration is pending.
+/// Highlighted card on a notification flagged as a payment. Shows the amount
+/// and direction read by the device-side parser (if any) and the action to
+/// create an editable wallet transaction. When the parser found nothing the
+/// user can still add it manually (the form opens empty).
 class DetectedTransactionCard extends StatelessWidget {
   const DetectedTransactionCard({
     super.key,
     this.readOnly = false,
     this.onCreate,
+    this.parsed,
   });
 
   final bool readOnly;
   final VoidCallback? onCreate;
+  final ParsedTransaction? parsed;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
+    final p = parsed;
 
     return Container(
       width: double.infinity,
@@ -42,12 +47,19 @@ class DetectedTransactionCard extends StatelessWidget {
             ],
           ),
           AppSpacing.gapSm,
-          Text(
-            'Tutar ve kategori cikarimi ile cuzdana ekleme entegrasyonu '
-            'sonraki asamada gelecek.',
-            style: theme.textTheme.bodySmall
-                ?.copyWith(color: scheme.onPrimaryContainer),
-          ),
+          if (p != null)
+            Text(
+              '${p.direction == TxnDirection.income ? 'Gelir' : 'Gider'}: '
+              '${p.amountMagnitude.toStringAsFixed(2)} ${p.currency}',
+              style: theme.textTheme.titleMedium
+                  ?.copyWith(color: scheme.onPrimaryContainer),
+            )
+          else
+            Text(
+              'Tutar otomatik okunamadi; cuzdana eklerken elle girebilirsiniz.',
+              style: theme.textTheme.bodySmall
+                  ?.copyWith(color: scheme.onPrimaryContainer),
+            ),
           if (!readOnly) ...[
             AppSpacing.gapMd,
             FilledButton.icon(

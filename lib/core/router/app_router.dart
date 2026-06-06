@@ -7,12 +7,14 @@ import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/signup_screen.dart';
 import '../../features/wallet/presentation/screens/wallet_screen.dart';
 import '../../features/wallet/presentation/screens/add_transaction_screen.dart';
+import '../../features/wallet/presentation/models/transaction_prefill.dart';
 import '../../features/wallet/presentation/screens/manage_categories_screen.dart';
 import '../../features/wallet/presentation/screens/wallet_dashboard_screen.dart';
 import '../../features/notifications/presentation/screens/notifications_screen.dart';
 import '../../features/notifications/presentation/screens/notification_detail_screen.dart';
 import '../../features/media_cleaner/presentation/screens/media_cleaner_screen.dart';
 import '../../features/media_cleaner/presentation/screens/media_delete_confirm_screen.dart';
+import '../../features/settings/presentation/screens/settings_screen.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authStateProvider);
@@ -48,7 +50,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 routes: [
                   GoRoute(
                     path: 'add',
-                    builder: (context, state) => const AddTransactionScreen(),
+                    builder: (context, state) => AddTransactionScreen(
+                      prefill: state.extra as TransactionPrefill?,
+                    ),
                   ),
                   GoRoute(
                     path: 'categories',
@@ -91,6 +95,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                         const MediaDeleteConfirmScreen(),
                   ),
                 ],
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/settings',
+                builder: (context, state) => const SettingsScreen(),
               ),
             ],
           ),

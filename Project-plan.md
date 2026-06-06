@@ -158,7 +158,7 @@ Android/mobile-only; web is a read-only stats view (no device file access).
 - [x] **Decisions LOCAL-ONLY** (Drift, keyed assetId+deviceId; never re-shown; never synced as rows)
 - [x] **Only per-device AGGREGATE stats sync** (Supabase `media_stats`, shown on phones + web read-only)
 - [ ] On-device verification (deferred to the same parked Android test session as 1.2/2 re-verify)
-- [ ] Deploy `media_stats` migration to Supabase (written, not yet applied)
+- [x] Deploy `media_stats` migration to Supabase (CI auto-applied on push; verified 2026-06-06)
 
 ### Phase 5 — Transaction Attachments (future — after all 3 apps ready)
 - [ ] Optional image per transaction (receipt/proof)
@@ -169,11 +169,25 @@ Android/mobile-only; web is a read-only stats view (no device file access).
 - Open questions (decide when built): Drive API auth (OAuth vs service account), folder structure,
   web vs mobile upload paths.
 
-### Phase 4 — Wallet + Notification Integration
-- [ ] ML/regex parser: detect transaction amounts in notification body
-- [ ] Auto-create transaction draft from matching notification
-- [ ] User confirms or dismisses draft
-- [ ] Link notification_id to transaction record
+### Phase 4 — Wallet + Notification Integration — code complete 2026-06-06 (on-device verify deferred)
+
+Hybrid parser: device-side regex first (free, offline, private), Groq AI fallback
+per-account (opt-in via a key in the new Ayarlar tab). See `docs/research/` notes
+in Project-state for the bank-format research; per-package templates are scaffolded
+but defer to the generic parser until real samples are captured on-device.
+
+- [x] Regex parser: detect amount/currency/direction in notification body
+      (`notification_parser.dart`; package routing + diacritic folding + date-noise strip)
+- [x] AI fallback: Groq (`groq_client.dart`, llama-3.1-8b-instant) called lazily only
+      when regex misses AND the account configured a key; sends only title+body
+- [x] Per-account Groq key: new Ayarlar tab + synced `user_settings` table (RLS, one row/user)
+- [x] Manual confirm: "Cuzdana ekle" -> pre-filled, fully editable AddTransactionScreen
+- [x] SMS auto-route: SMS-app body with an NN.NN amount -> cancelable `pending` draft
+      (excluded from balance; tap to edit+commit, swipe to cancel)
+- [x] Link notification_id to transaction record (+ source='notification')
+- [ ] On-device verification (deferred to the same parked Android test session)
+- [ ] Refine per-package bank templates once real notification samples are captured
+- [ ] Deploy `user_settings` + `transaction_pending` migrations (auto-applies on push)
 
 ### Phase 6 — Cloud Photos (future idea)
 - [ ] Connect Google Photos account(s) via OAuth so Media Cleaner can also review/act on cloud photos
