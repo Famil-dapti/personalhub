@@ -1981,6 +1981,1700 @@ class LocalNotificationsCompanion extends UpdateCompanion<LocalNotification> {
   }
 }
 
+class $LocalMediaAssetsTable extends LocalMediaAssets
+    with TableInfo<$LocalMediaAssetsTable, LocalMediaAsset> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalMediaAssetsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _assetIdMeta = const VerificationMeta(
+    'assetId',
+  );
+  @override
+  late final GeneratedColumn<String> assetId = GeneratedColumn<String>(
+    'asset_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _deviceIdMeta = const VerificationMeta(
+    'deviceId',
+  );
+  @override
+  late final GeneratedColumn<String> deviceId = GeneratedColumn<String>(
+    'device_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _typeMeta = const VerificationMeta('type');
+  @override
+  late final GeneratedColumn<String> type = GeneratedColumn<String>(
+    'type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _albumIdMeta = const VerificationMeta(
+    'albumId',
+  );
+  @override
+  late final GeneratedColumn<String> albumId = GeneratedColumn<String>(
+    'album_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _albumNameMeta = const VerificationMeta(
+    'albumName',
+  );
+  @override
+  late final GeneratedColumn<String> albumName = GeneratedColumn<String>(
+    'album_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _relativePathMeta = const VerificationMeta(
+    'relativePath',
+  );
+  @override
+  late final GeneratedColumn<String> relativePath = GeneratedColumn<String>(
+    'relative_path',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _sizeBytesMeta = const VerificationMeta(
+    'sizeBytes',
+  );
+  @override
+  late final GeneratedColumn<int> sizeBytes = GeneratedColumn<int>(
+    'size_bytes',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _widthMeta = const VerificationMeta('width');
+  @override
+  late final GeneratedColumn<int> width = GeneratedColumn<int>(
+    'width',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _heightMeta = const VerificationMeta('height');
+  @override
+  late final GeneratedColumn<int> height = GeneratedColumn<int>(
+    'height',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _durationSecMeta = const VerificationMeta(
+    'durationSec',
+  );
+  @override
+  late final GeneratedColumn<int> durationSec = GeneratedColumn<int>(
+    'duration_sec',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdDateMeta = const VerificationMeta(
+    'createdDate',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdDate = GeneratedColumn<DateTime>(
+    'created_date',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+    'title',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _indexedAtMeta = const VerificationMeta(
+    'indexedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> indexedAt = GeneratedColumn<DateTime>(
+    'indexed_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    assetId,
+    deviceId,
+    type,
+    albumId,
+    albumName,
+    relativePath,
+    sizeBytes,
+    width,
+    height,
+    durationSec,
+    createdDate,
+    title,
+    indexedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_media_assets';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalMediaAsset> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('asset_id')) {
+      context.handle(
+        _assetIdMeta,
+        assetId.isAcceptableOrUnknown(data['asset_id']!, _assetIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_assetIdMeta);
+    }
+    if (data.containsKey('device_id')) {
+      context.handle(
+        _deviceIdMeta,
+        deviceId.isAcceptableOrUnknown(data['device_id']!, _deviceIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_deviceIdMeta);
+    }
+    if (data.containsKey('type')) {
+      context.handle(
+        _typeMeta,
+        type.isAcceptableOrUnknown(data['type']!, _typeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_typeMeta);
+    }
+    if (data.containsKey('album_id')) {
+      context.handle(
+        _albumIdMeta,
+        albumId.isAcceptableOrUnknown(data['album_id']!, _albumIdMeta),
+      );
+    }
+    if (data.containsKey('album_name')) {
+      context.handle(
+        _albumNameMeta,
+        albumName.isAcceptableOrUnknown(data['album_name']!, _albumNameMeta),
+      );
+    }
+    if (data.containsKey('relative_path')) {
+      context.handle(
+        _relativePathMeta,
+        relativePath.isAcceptableOrUnknown(
+          data['relative_path']!,
+          _relativePathMeta,
+        ),
+      );
+    }
+    if (data.containsKey('size_bytes')) {
+      context.handle(
+        _sizeBytesMeta,
+        sizeBytes.isAcceptableOrUnknown(data['size_bytes']!, _sizeBytesMeta),
+      );
+    }
+    if (data.containsKey('width')) {
+      context.handle(
+        _widthMeta,
+        width.isAcceptableOrUnknown(data['width']!, _widthMeta),
+      );
+    }
+    if (data.containsKey('height')) {
+      context.handle(
+        _heightMeta,
+        height.isAcceptableOrUnknown(data['height']!, _heightMeta),
+      );
+    }
+    if (data.containsKey('duration_sec')) {
+      context.handle(
+        _durationSecMeta,
+        durationSec.isAcceptableOrUnknown(
+          data['duration_sec']!,
+          _durationSecMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_date')) {
+      context.handle(
+        _createdDateMeta,
+        createdDate.isAcceptableOrUnknown(
+          data['created_date']!,
+          _createdDateMeta,
+        ),
+      );
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+        _titleMeta,
+        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
+      );
+    }
+    if (data.containsKey('indexed_at')) {
+      context.handle(
+        _indexedAtMeta,
+        indexedAt.isAcceptableOrUnknown(data['indexed_at']!, _indexedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_indexedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {assetId};
+  @override
+  LocalMediaAsset map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalMediaAsset(
+      assetId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}asset_id'],
+      )!,
+      deviceId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}device_id'],
+      )!,
+      type: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}type'],
+      )!,
+      albumId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}album_id'],
+      ),
+      albumName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}album_name'],
+      ),
+      relativePath: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}relative_path'],
+      ),
+      sizeBytes: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}size_bytes'],
+      )!,
+      width: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}width'],
+      ),
+      height: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}height'],
+      ),
+      durationSec: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}duration_sec'],
+      ),
+      createdDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_date'],
+      ),
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      ),
+      indexedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}indexed_at'],
+      )!,
+    );
+  }
+
+  @override
+  $LocalMediaAssetsTable createAlias(String alias) {
+    return $LocalMediaAssetsTable(attachedDatabase, alias);
+  }
+}
+
+class LocalMediaAsset extends DataClass implements Insertable<LocalMediaAsset> {
+  final String assetId;
+  final String deviceId;
+  final String type;
+  final String? albumId;
+  final String? albumName;
+  final String? relativePath;
+  final int sizeBytes;
+  final int? width;
+  final int? height;
+  final int? durationSec;
+  final DateTime? createdDate;
+  final String? title;
+  final DateTime indexedAt;
+  const LocalMediaAsset({
+    required this.assetId,
+    required this.deviceId,
+    required this.type,
+    this.albumId,
+    this.albumName,
+    this.relativePath,
+    required this.sizeBytes,
+    this.width,
+    this.height,
+    this.durationSec,
+    this.createdDate,
+    this.title,
+    required this.indexedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['asset_id'] = Variable<String>(assetId);
+    map['device_id'] = Variable<String>(deviceId);
+    map['type'] = Variable<String>(type);
+    if (!nullToAbsent || albumId != null) {
+      map['album_id'] = Variable<String>(albumId);
+    }
+    if (!nullToAbsent || albumName != null) {
+      map['album_name'] = Variable<String>(albumName);
+    }
+    if (!nullToAbsent || relativePath != null) {
+      map['relative_path'] = Variable<String>(relativePath);
+    }
+    map['size_bytes'] = Variable<int>(sizeBytes);
+    if (!nullToAbsent || width != null) {
+      map['width'] = Variable<int>(width);
+    }
+    if (!nullToAbsent || height != null) {
+      map['height'] = Variable<int>(height);
+    }
+    if (!nullToAbsent || durationSec != null) {
+      map['duration_sec'] = Variable<int>(durationSec);
+    }
+    if (!nullToAbsent || createdDate != null) {
+      map['created_date'] = Variable<DateTime>(createdDate);
+    }
+    if (!nullToAbsent || title != null) {
+      map['title'] = Variable<String>(title);
+    }
+    map['indexed_at'] = Variable<DateTime>(indexedAt);
+    return map;
+  }
+
+  LocalMediaAssetsCompanion toCompanion(bool nullToAbsent) {
+    return LocalMediaAssetsCompanion(
+      assetId: Value(assetId),
+      deviceId: Value(deviceId),
+      type: Value(type),
+      albumId: albumId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(albumId),
+      albumName: albumName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(albumName),
+      relativePath: relativePath == null && nullToAbsent
+          ? const Value.absent()
+          : Value(relativePath),
+      sizeBytes: Value(sizeBytes),
+      width: width == null && nullToAbsent
+          ? const Value.absent()
+          : Value(width),
+      height: height == null && nullToAbsent
+          ? const Value.absent()
+          : Value(height),
+      durationSec: durationSec == null && nullToAbsent
+          ? const Value.absent()
+          : Value(durationSec),
+      createdDate: createdDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(createdDate),
+      title: title == null && nullToAbsent
+          ? const Value.absent()
+          : Value(title),
+      indexedAt: Value(indexedAt),
+    );
+  }
+
+  factory LocalMediaAsset.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalMediaAsset(
+      assetId: serializer.fromJson<String>(json['assetId']),
+      deviceId: serializer.fromJson<String>(json['deviceId']),
+      type: serializer.fromJson<String>(json['type']),
+      albumId: serializer.fromJson<String?>(json['albumId']),
+      albumName: serializer.fromJson<String?>(json['albumName']),
+      relativePath: serializer.fromJson<String?>(json['relativePath']),
+      sizeBytes: serializer.fromJson<int>(json['sizeBytes']),
+      width: serializer.fromJson<int?>(json['width']),
+      height: serializer.fromJson<int?>(json['height']),
+      durationSec: serializer.fromJson<int?>(json['durationSec']),
+      createdDate: serializer.fromJson<DateTime?>(json['createdDate']),
+      title: serializer.fromJson<String?>(json['title']),
+      indexedAt: serializer.fromJson<DateTime>(json['indexedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'assetId': serializer.toJson<String>(assetId),
+      'deviceId': serializer.toJson<String>(deviceId),
+      'type': serializer.toJson<String>(type),
+      'albumId': serializer.toJson<String?>(albumId),
+      'albumName': serializer.toJson<String?>(albumName),
+      'relativePath': serializer.toJson<String?>(relativePath),
+      'sizeBytes': serializer.toJson<int>(sizeBytes),
+      'width': serializer.toJson<int?>(width),
+      'height': serializer.toJson<int?>(height),
+      'durationSec': serializer.toJson<int?>(durationSec),
+      'createdDate': serializer.toJson<DateTime?>(createdDate),
+      'title': serializer.toJson<String?>(title),
+      'indexedAt': serializer.toJson<DateTime>(indexedAt),
+    };
+  }
+
+  LocalMediaAsset copyWith({
+    String? assetId,
+    String? deviceId,
+    String? type,
+    Value<String?> albumId = const Value.absent(),
+    Value<String?> albumName = const Value.absent(),
+    Value<String?> relativePath = const Value.absent(),
+    int? sizeBytes,
+    Value<int?> width = const Value.absent(),
+    Value<int?> height = const Value.absent(),
+    Value<int?> durationSec = const Value.absent(),
+    Value<DateTime?> createdDate = const Value.absent(),
+    Value<String?> title = const Value.absent(),
+    DateTime? indexedAt,
+  }) => LocalMediaAsset(
+    assetId: assetId ?? this.assetId,
+    deviceId: deviceId ?? this.deviceId,
+    type: type ?? this.type,
+    albumId: albumId.present ? albumId.value : this.albumId,
+    albumName: albumName.present ? albumName.value : this.albumName,
+    relativePath: relativePath.present ? relativePath.value : this.relativePath,
+    sizeBytes: sizeBytes ?? this.sizeBytes,
+    width: width.present ? width.value : this.width,
+    height: height.present ? height.value : this.height,
+    durationSec: durationSec.present ? durationSec.value : this.durationSec,
+    createdDate: createdDate.present ? createdDate.value : this.createdDate,
+    title: title.present ? title.value : this.title,
+    indexedAt: indexedAt ?? this.indexedAt,
+  );
+  LocalMediaAsset copyWithCompanion(LocalMediaAssetsCompanion data) {
+    return LocalMediaAsset(
+      assetId: data.assetId.present ? data.assetId.value : this.assetId,
+      deviceId: data.deviceId.present ? data.deviceId.value : this.deviceId,
+      type: data.type.present ? data.type.value : this.type,
+      albumId: data.albumId.present ? data.albumId.value : this.albumId,
+      albumName: data.albumName.present ? data.albumName.value : this.albumName,
+      relativePath: data.relativePath.present
+          ? data.relativePath.value
+          : this.relativePath,
+      sizeBytes: data.sizeBytes.present ? data.sizeBytes.value : this.sizeBytes,
+      width: data.width.present ? data.width.value : this.width,
+      height: data.height.present ? data.height.value : this.height,
+      durationSec: data.durationSec.present
+          ? data.durationSec.value
+          : this.durationSec,
+      createdDate: data.createdDate.present
+          ? data.createdDate.value
+          : this.createdDate,
+      title: data.title.present ? data.title.value : this.title,
+      indexedAt: data.indexedAt.present ? data.indexedAt.value : this.indexedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalMediaAsset(')
+          ..write('assetId: $assetId, ')
+          ..write('deviceId: $deviceId, ')
+          ..write('type: $type, ')
+          ..write('albumId: $albumId, ')
+          ..write('albumName: $albumName, ')
+          ..write('relativePath: $relativePath, ')
+          ..write('sizeBytes: $sizeBytes, ')
+          ..write('width: $width, ')
+          ..write('height: $height, ')
+          ..write('durationSec: $durationSec, ')
+          ..write('createdDate: $createdDate, ')
+          ..write('title: $title, ')
+          ..write('indexedAt: $indexedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    assetId,
+    deviceId,
+    type,
+    albumId,
+    albumName,
+    relativePath,
+    sizeBytes,
+    width,
+    height,
+    durationSec,
+    createdDate,
+    title,
+    indexedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalMediaAsset &&
+          other.assetId == this.assetId &&
+          other.deviceId == this.deviceId &&
+          other.type == this.type &&
+          other.albumId == this.albumId &&
+          other.albumName == this.albumName &&
+          other.relativePath == this.relativePath &&
+          other.sizeBytes == this.sizeBytes &&
+          other.width == this.width &&
+          other.height == this.height &&
+          other.durationSec == this.durationSec &&
+          other.createdDate == this.createdDate &&
+          other.title == this.title &&
+          other.indexedAt == this.indexedAt);
+}
+
+class LocalMediaAssetsCompanion extends UpdateCompanion<LocalMediaAsset> {
+  final Value<String> assetId;
+  final Value<String> deviceId;
+  final Value<String> type;
+  final Value<String?> albumId;
+  final Value<String?> albumName;
+  final Value<String?> relativePath;
+  final Value<int> sizeBytes;
+  final Value<int?> width;
+  final Value<int?> height;
+  final Value<int?> durationSec;
+  final Value<DateTime?> createdDate;
+  final Value<String?> title;
+  final Value<DateTime> indexedAt;
+  final Value<int> rowid;
+  const LocalMediaAssetsCompanion({
+    this.assetId = const Value.absent(),
+    this.deviceId = const Value.absent(),
+    this.type = const Value.absent(),
+    this.albumId = const Value.absent(),
+    this.albumName = const Value.absent(),
+    this.relativePath = const Value.absent(),
+    this.sizeBytes = const Value.absent(),
+    this.width = const Value.absent(),
+    this.height = const Value.absent(),
+    this.durationSec = const Value.absent(),
+    this.createdDate = const Value.absent(),
+    this.title = const Value.absent(),
+    this.indexedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalMediaAssetsCompanion.insert({
+    required String assetId,
+    required String deviceId,
+    required String type,
+    this.albumId = const Value.absent(),
+    this.albumName = const Value.absent(),
+    this.relativePath = const Value.absent(),
+    this.sizeBytes = const Value.absent(),
+    this.width = const Value.absent(),
+    this.height = const Value.absent(),
+    this.durationSec = const Value.absent(),
+    this.createdDate = const Value.absent(),
+    this.title = const Value.absent(),
+    required DateTime indexedAt,
+    this.rowid = const Value.absent(),
+  }) : assetId = Value(assetId),
+       deviceId = Value(deviceId),
+       type = Value(type),
+       indexedAt = Value(indexedAt);
+  static Insertable<LocalMediaAsset> custom({
+    Expression<String>? assetId,
+    Expression<String>? deviceId,
+    Expression<String>? type,
+    Expression<String>? albumId,
+    Expression<String>? albumName,
+    Expression<String>? relativePath,
+    Expression<int>? sizeBytes,
+    Expression<int>? width,
+    Expression<int>? height,
+    Expression<int>? durationSec,
+    Expression<DateTime>? createdDate,
+    Expression<String>? title,
+    Expression<DateTime>? indexedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (assetId != null) 'asset_id': assetId,
+      if (deviceId != null) 'device_id': deviceId,
+      if (type != null) 'type': type,
+      if (albumId != null) 'album_id': albumId,
+      if (albumName != null) 'album_name': albumName,
+      if (relativePath != null) 'relative_path': relativePath,
+      if (sizeBytes != null) 'size_bytes': sizeBytes,
+      if (width != null) 'width': width,
+      if (height != null) 'height': height,
+      if (durationSec != null) 'duration_sec': durationSec,
+      if (createdDate != null) 'created_date': createdDate,
+      if (title != null) 'title': title,
+      if (indexedAt != null) 'indexed_at': indexedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalMediaAssetsCompanion copyWith({
+    Value<String>? assetId,
+    Value<String>? deviceId,
+    Value<String>? type,
+    Value<String?>? albumId,
+    Value<String?>? albumName,
+    Value<String?>? relativePath,
+    Value<int>? sizeBytes,
+    Value<int?>? width,
+    Value<int?>? height,
+    Value<int?>? durationSec,
+    Value<DateTime?>? createdDate,
+    Value<String?>? title,
+    Value<DateTime>? indexedAt,
+    Value<int>? rowid,
+  }) {
+    return LocalMediaAssetsCompanion(
+      assetId: assetId ?? this.assetId,
+      deviceId: deviceId ?? this.deviceId,
+      type: type ?? this.type,
+      albumId: albumId ?? this.albumId,
+      albumName: albumName ?? this.albumName,
+      relativePath: relativePath ?? this.relativePath,
+      sizeBytes: sizeBytes ?? this.sizeBytes,
+      width: width ?? this.width,
+      height: height ?? this.height,
+      durationSec: durationSec ?? this.durationSec,
+      createdDate: createdDate ?? this.createdDate,
+      title: title ?? this.title,
+      indexedAt: indexedAt ?? this.indexedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (assetId.present) {
+      map['asset_id'] = Variable<String>(assetId.value);
+    }
+    if (deviceId.present) {
+      map['device_id'] = Variable<String>(deviceId.value);
+    }
+    if (type.present) {
+      map['type'] = Variable<String>(type.value);
+    }
+    if (albumId.present) {
+      map['album_id'] = Variable<String>(albumId.value);
+    }
+    if (albumName.present) {
+      map['album_name'] = Variable<String>(albumName.value);
+    }
+    if (relativePath.present) {
+      map['relative_path'] = Variable<String>(relativePath.value);
+    }
+    if (sizeBytes.present) {
+      map['size_bytes'] = Variable<int>(sizeBytes.value);
+    }
+    if (width.present) {
+      map['width'] = Variable<int>(width.value);
+    }
+    if (height.present) {
+      map['height'] = Variable<int>(height.value);
+    }
+    if (durationSec.present) {
+      map['duration_sec'] = Variable<int>(durationSec.value);
+    }
+    if (createdDate.present) {
+      map['created_date'] = Variable<DateTime>(createdDate.value);
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (indexedAt.present) {
+      map['indexed_at'] = Variable<DateTime>(indexedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalMediaAssetsCompanion(')
+          ..write('assetId: $assetId, ')
+          ..write('deviceId: $deviceId, ')
+          ..write('type: $type, ')
+          ..write('albumId: $albumId, ')
+          ..write('albumName: $albumName, ')
+          ..write('relativePath: $relativePath, ')
+          ..write('sizeBytes: $sizeBytes, ')
+          ..write('width: $width, ')
+          ..write('height: $height, ')
+          ..write('durationSec: $durationSec, ')
+          ..write('createdDate: $createdDate, ')
+          ..write('title: $title, ')
+          ..write('indexedAt: $indexedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $LocalMediaDecisionsTable extends LocalMediaDecisions
+    with TableInfo<$LocalMediaDecisionsTable, LocalMediaDecision> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalMediaDecisionsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _assetIdMeta = const VerificationMeta(
+    'assetId',
+  );
+  @override
+  late final GeneratedColumn<String> assetId = GeneratedColumn<String>(
+    'asset_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _deviceIdMeta = const VerificationMeta(
+    'deviceId',
+  );
+  @override
+  late final GeneratedColumn<String> deviceId = GeneratedColumn<String>(
+    'device_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _decisionMeta = const VerificationMeta(
+    'decision',
+  );
+  @override
+  late final GeneratedColumn<String> decision = GeneratedColumn<String>(
+    'decision',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _pendingDeleteMeta = const VerificationMeta(
+    'pendingDelete',
+  );
+  @override
+  late final GeneratedColumn<bool> pendingDelete = GeneratedColumn<bool>(
+    'pending_delete',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("pending_delete" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _decidedAtMeta = const VerificationMeta(
+    'decidedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> decidedAt = GeneratedColumn<DateTime>(
+    'decided_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    assetId,
+    deviceId,
+    decision,
+    pendingDelete,
+    decidedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_media_decisions';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalMediaDecision> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('asset_id')) {
+      context.handle(
+        _assetIdMeta,
+        assetId.isAcceptableOrUnknown(data['asset_id']!, _assetIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_assetIdMeta);
+    }
+    if (data.containsKey('device_id')) {
+      context.handle(
+        _deviceIdMeta,
+        deviceId.isAcceptableOrUnknown(data['device_id']!, _deviceIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_deviceIdMeta);
+    }
+    if (data.containsKey('decision')) {
+      context.handle(
+        _decisionMeta,
+        decision.isAcceptableOrUnknown(data['decision']!, _decisionMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_decisionMeta);
+    }
+    if (data.containsKey('pending_delete')) {
+      context.handle(
+        _pendingDeleteMeta,
+        pendingDelete.isAcceptableOrUnknown(
+          data['pending_delete']!,
+          _pendingDeleteMeta,
+        ),
+      );
+    }
+    if (data.containsKey('decided_at')) {
+      context.handle(
+        _decidedAtMeta,
+        decidedAt.isAcceptableOrUnknown(data['decided_at']!, _decidedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_decidedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {assetId};
+  @override
+  LocalMediaDecision map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalMediaDecision(
+      assetId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}asset_id'],
+      )!,
+      deviceId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}device_id'],
+      )!,
+      decision: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}decision'],
+      )!,
+      pendingDelete: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}pending_delete'],
+      )!,
+      decidedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}decided_at'],
+      )!,
+    );
+  }
+
+  @override
+  $LocalMediaDecisionsTable createAlias(String alias) {
+    return $LocalMediaDecisionsTable(attachedDatabase, alias);
+  }
+}
+
+class LocalMediaDecision extends DataClass
+    implements Insertable<LocalMediaDecision> {
+  final String assetId;
+  final String deviceId;
+  final String decision;
+  final bool pendingDelete;
+  final DateTime decidedAt;
+  const LocalMediaDecision({
+    required this.assetId,
+    required this.deviceId,
+    required this.decision,
+    required this.pendingDelete,
+    required this.decidedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['asset_id'] = Variable<String>(assetId);
+    map['device_id'] = Variable<String>(deviceId);
+    map['decision'] = Variable<String>(decision);
+    map['pending_delete'] = Variable<bool>(pendingDelete);
+    map['decided_at'] = Variable<DateTime>(decidedAt);
+    return map;
+  }
+
+  LocalMediaDecisionsCompanion toCompanion(bool nullToAbsent) {
+    return LocalMediaDecisionsCompanion(
+      assetId: Value(assetId),
+      deviceId: Value(deviceId),
+      decision: Value(decision),
+      pendingDelete: Value(pendingDelete),
+      decidedAt: Value(decidedAt),
+    );
+  }
+
+  factory LocalMediaDecision.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalMediaDecision(
+      assetId: serializer.fromJson<String>(json['assetId']),
+      deviceId: serializer.fromJson<String>(json['deviceId']),
+      decision: serializer.fromJson<String>(json['decision']),
+      pendingDelete: serializer.fromJson<bool>(json['pendingDelete']),
+      decidedAt: serializer.fromJson<DateTime>(json['decidedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'assetId': serializer.toJson<String>(assetId),
+      'deviceId': serializer.toJson<String>(deviceId),
+      'decision': serializer.toJson<String>(decision),
+      'pendingDelete': serializer.toJson<bool>(pendingDelete),
+      'decidedAt': serializer.toJson<DateTime>(decidedAt),
+    };
+  }
+
+  LocalMediaDecision copyWith({
+    String? assetId,
+    String? deviceId,
+    String? decision,
+    bool? pendingDelete,
+    DateTime? decidedAt,
+  }) => LocalMediaDecision(
+    assetId: assetId ?? this.assetId,
+    deviceId: deviceId ?? this.deviceId,
+    decision: decision ?? this.decision,
+    pendingDelete: pendingDelete ?? this.pendingDelete,
+    decidedAt: decidedAt ?? this.decidedAt,
+  );
+  LocalMediaDecision copyWithCompanion(LocalMediaDecisionsCompanion data) {
+    return LocalMediaDecision(
+      assetId: data.assetId.present ? data.assetId.value : this.assetId,
+      deviceId: data.deviceId.present ? data.deviceId.value : this.deviceId,
+      decision: data.decision.present ? data.decision.value : this.decision,
+      pendingDelete: data.pendingDelete.present
+          ? data.pendingDelete.value
+          : this.pendingDelete,
+      decidedAt: data.decidedAt.present ? data.decidedAt.value : this.decidedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalMediaDecision(')
+          ..write('assetId: $assetId, ')
+          ..write('deviceId: $deviceId, ')
+          ..write('decision: $decision, ')
+          ..write('pendingDelete: $pendingDelete, ')
+          ..write('decidedAt: $decidedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(assetId, deviceId, decision, pendingDelete, decidedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalMediaDecision &&
+          other.assetId == this.assetId &&
+          other.deviceId == this.deviceId &&
+          other.decision == this.decision &&
+          other.pendingDelete == this.pendingDelete &&
+          other.decidedAt == this.decidedAt);
+}
+
+class LocalMediaDecisionsCompanion extends UpdateCompanion<LocalMediaDecision> {
+  final Value<String> assetId;
+  final Value<String> deviceId;
+  final Value<String> decision;
+  final Value<bool> pendingDelete;
+  final Value<DateTime> decidedAt;
+  final Value<int> rowid;
+  const LocalMediaDecisionsCompanion({
+    this.assetId = const Value.absent(),
+    this.deviceId = const Value.absent(),
+    this.decision = const Value.absent(),
+    this.pendingDelete = const Value.absent(),
+    this.decidedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalMediaDecisionsCompanion.insert({
+    required String assetId,
+    required String deviceId,
+    required String decision,
+    this.pendingDelete = const Value.absent(),
+    required DateTime decidedAt,
+    this.rowid = const Value.absent(),
+  }) : assetId = Value(assetId),
+       deviceId = Value(deviceId),
+       decision = Value(decision),
+       decidedAt = Value(decidedAt);
+  static Insertable<LocalMediaDecision> custom({
+    Expression<String>? assetId,
+    Expression<String>? deviceId,
+    Expression<String>? decision,
+    Expression<bool>? pendingDelete,
+    Expression<DateTime>? decidedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (assetId != null) 'asset_id': assetId,
+      if (deviceId != null) 'device_id': deviceId,
+      if (decision != null) 'decision': decision,
+      if (pendingDelete != null) 'pending_delete': pendingDelete,
+      if (decidedAt != null) 'decided_at': decidedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalMediaDecisionsCompanion copyWith({
+    Value<String>? assetId,
+    Value<String>? deviceId,
+    Value<String>? decision,
+    Value<bool>? pendingDelete,
+    Value<DateTime>? decidedAt,
+    Value<int>? rowid,
+  }) {
+    return LocalMediaDecisionsCompanion(
+      assetId: assetId ?? this.assetId,
+      deviceId: deviceId ?? this.deviceId,
+      decision: decision ?? this.decision,
+      pendingDelete: pendingDelete ?? this.pendingDelete,
+      decidedAt: decidedAt ?? this.decidedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (assetId.present) {
+      map['asset_id'] = Variable<String>(assetId.value);
+    }
+    if (deviceId.present) {
+      map['device_id'] = Variable<String>(deviceId.value);
+    }
+    if (decision.present) {
+      map['decision'] = Variable<String>(decision.value);
+    }
+    if (pendingDelete.present) {
+      map['pending_delete'] = Variable<bool>(pendingDelete.value);
+    }
+    if (decidedAt.present) {
+      map['decided_at'] = Variable<DateTime>(decidedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalMediaDecisionsCompanion(')
+          ..write('assetId: $assetId, ')
+          ..write('deviceId: $deviceId, ')
+          ..write('decision: $decision, ')
+          ..write('pendingDelete: $pendingDelete, ')
+          ..write('decidedAt: $decidedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $LocalMediaStatsTable extends LocalMediaStats
+    with TableInfo<$LocalMediaStatsTable, LocalMediaStat> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalMediaStatsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _deviceIdMeta = const VerificationMeta(
+    'deviceId',
+  );
+  @override
+  late final GeneratedColumn<String> deviceId = GeneratedColumn<String>(
+    'device_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _deviceNameMeta = const VerificationMeta(
+    'deviceName',
+  );
+  @override
+  late final GeneratedColumn<String> deviceName = GeneratedColumn<String>(
+    'device_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _totalMeta = const VerificationMeta('total');
+  @override
+  late final GeneratedColumn<int> total = GeneratedColumn<int>(
+    'total',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _decidedMeta = const VerificationMeta(
+    'decided',
+  );
+  @override
+  late final GeneratedColumn<int> decided = GeneratedColumn<int>(
+    'decided',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _keptMeta = const VerificationMeta('kept');
+  @override
+  late final GeneratedColumn<int> kept = GeneratedColumn<int>(
+    'kept',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _deletedMeta = const VerificationMeta(
+    'deleted',
+  );
+  @override
+  late final GeneratedColumn<int> deleted = GeneratedColumn<int>(
+    'deleted',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    userId,
+    deviceId,
+    deviceName,
+    total,
+    decided,
+    kept,
+    deleted,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_media_stats';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalMediaStat> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
+    }
+    if (data.containsKey('device_id')) {
+      context.handle(
+        _deviceIdMeta,
+        deviceId.isAcceptableOrUnknown(data['device_id']!, _deviceIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_deviceIdMeta);
+    }
+    if (data.containsKey('device_name')) {
+      context.handle(
+        _deviceNameMeta,
+        deviceName.isAcceptableOrUnknown(data['device_name']!, _deviceNameMeta),
+      );
+    }
+    if (data.containsKey('total')) {
+      context.handle(
+        _totalMeta,
+        total.isAcceptableOrUnknown(data['total']!, _totalMeta),
+      );
+    }
+    if (data.containsKey('decided')) {
+      context.handle(
+        _decidedMeta,
+        decided.isAcceptableOrUnknown(data['decided']!, _decidedMeta),
+      );
+    }
+    if (data.containsKey('kept')) {
+      context.handle(
+        _keptMeta,
+        kept.isAcceptableOrUnknown(data['kept']!, _keptMeta),
+      );
+    }
+    if (data.containsKey('deleted')) {
+      context.handle(
+        _deletedMeta,
+        deleted.isAcceptableOrUnknown(data['deleted']!, _deletedMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  LocalMediaStat map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalMediaStat(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      )!,
+      deviceId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}device_id'],
+      )!,
+      deviceName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}device_name'],
+      ),
+      total: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}total'],
+      )!,
+      decided: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}decided'],
+      )!,
+      kept: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}kept'],
+      )!,
+      deleted: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}deleted'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $LocalMediaStatsTable createAlias(String alias) {
+    return $LocalMediaStatsTable(attachedDatabase, alias);
+  }
+}
+
+class LocalMediaStat extends DataClass implements Insertable<LocalMediaStat> {
+  final String id;
+  final String userId;
+  final String deviceId;
+  final String? deviceName;
+  final int total;
+  final int decided;
+  final int kept;
+  final int deleted;
+  final DateTime updatedAt;
+  const LocalMediaStat({
+    required this.id,
+    required this.userId,
+    required this.deviceId,
+    this.deviceName,
+    required this.total,
+    required this.decided,
+    required this.kept,
+    required this.deleted,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['user_id'] = Variable<String>(userId);
+    map['device_id'] = Variable<String>(deviceId);
+    if (!nullToAbsent || deviceName != null) {
+      map['device_name'] = Variable<String>(deviceName);
+    }
+    map['total'] = Variable<int>(total);
+    map['decided'] = Variable<int>(decided);
+    map['kept'] = Variable<int>(kept);
+    map['deleted'] = Variable<int>(deleted);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  LocalMediaStatsCompanion toCompanion(bool nullToAbsent) {
+    return LocalMediaStatsCompanion(
+      id: Value(id),
+      userId: Value(userId),
+      deviceId: Value(deviceId),
+      deviceName: deviceName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deviceName),
+      total: Value(total),
+      decided: Value(decided),
+      kept: Value(kept),
+      deleted: Value(deleted),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory LocalMediaStat.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalMediaStat(
+      id: serializer.fromJson<String>(json['id']),
+      userId: serializer.fromJson<String>(json['userId']),
+      deviceId: serializer.fromJson<String>(json['deviceId']),
+      deviceName: serializer.fromJson<String?>(json['deviceName']),
+      total: serializer.fromJson<int>(json['total']),
+      decided: serializer.fromJson<int>(json['decided']),
+      kept: serializer.fromJson<int>(json['kept']),
+      deleted: serializer.fromJson<int>(json['deleted']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'userId': serializer.toJson<String>(userId),
+      'deviceId': serializer.toJson<String>(deviceId),
+      'deviceName': serializer.toJson<String?>(deviceName),
+      'total': serializer.toJson<int>(total),
+      'decided': serializer.toJson<int>(decided),
+      'kept': serializer.toJson<int>(kept),
+      'deleted': serializer.toJson<int>(deleted),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  LocalMediaStat copyWith({
+    String? id,
+    String? userId,
+    String? deviceId,
+    Value<String?> deviceName = const Value.absent(),
+    int? total,
+    int? decided,
+    int? kept,
+    int? deleted,
+    DateTime? updatedAt,
+  }) => LocalMediaStat(
+    id: id ?? this.id,
+    userId: userId ?? this.userId,
+    deviceId: deviceId ?? this.deviceId,
+    deviceName: deviceName.present ? deviceName.value : this.deviceName,
+    total: total ?? this.total,
+    decided: decided ?? this.decided,
+    kept: kept ?? this.kept,
+    deleted: deleted ?? this.deleted,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  LocalMediaStat copyWithCompanion(LocalMediaStatsCompanion data) {
+    return LocalMediaStat(
+      id: data.id.present ? data.id.value : this.id,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      deviceId: data.deviceId.present ? data.deviceId.value : this.deviceId,
+      deviceName: data.deviceName.present
+          ? data.deviceName.value
+          : this.deviceName,
+      total: data.total.present ? data.total.value : this.total,
+      decided: data.decided.present ? data.decided.value : this.decided,
+      kept: data.kept.present ? data.kept.value : this.kept,
+      deleted: data.deleted.present ? data.deleted.value : this.deleted,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalMediaStat(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('deviceId: $deviceId, ')
+          ..write('deviceName: $deviceName, ')
+          ..write('total: $total, ')
+          ..write('decided: $decided, ')
+          ..write('kept: $kept, ')
+          ..write('deleted: $deleted, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    userId,
+    deviceId,
+    deviceName,
+    total,
+    decided,
+    kept,
+    deleted,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalMediaStat &&
+          other.id == this.id &&
+          other.userId == this.userId &&
+          other.deviceId == this.deviceId &&
+          other.deviceName == this.deviceName &&
+          other.total == this.total &&
+          other.decided == this.decided &&
+          other.kept == this.kept &&
+          other.deleted == this.deleted &&
+          other.updatedAt == this.updatedAt);
+}
+
+class LocalMediaStatsCompanion extends UpdateCompanion<LocalMediaStat> {
+  final Value<String> id;
+  final Value<String> userId;
+  final Value<String> deviceId;
+  final Value<String?> deviceName;
+  final Value<int> total;
+  final Value<int> decided;
+  final Value<int> kept;
+  final Value<int> deleted;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const LocalMediaStatsCompanion({
+    this.id = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.deviceId = const Value.absent(),
+    this.deviceName = const Value.absent(),
+    this.total = const Value.absent(),
+    this.decided = const Value.absent(),
+    this.kept = const Value.absent(),
+    this.deleted = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalMediaStatsCompanion.insert({
+    required String id,
+    required String userId,
+    required String deviceId,
+    this.deviceName = const Value.absent(),
+    this.total = const Value.absent(),
+    this.decided = const Value.absent(),
+    this.kept = const Value.absent(),
+    this.deleted = const Value.absent(),
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       userId = Value(userId),
+       deviceId = Value(deviceId),
+       updatedAt = Value(updatedAt);
+  static Insertable<LocalMediaStat> custom({
+    Expression<String>? id,
+    Expression<String>? userId,
+    Expression<String>? deviceId,
+    Expression<String>? deviceName,
+    Expression<int>? total,
+    Expression<int>? decided,
+    Expression<int>? kept,
+    Expression<int>? deleted,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (userId != null) 'user_id': userId,
+      if (deviceId != null) 'device_id': deviceId,
+      if (deviceName != null) 'device_name': deviceName,
+      if (total != null) 'total': total,
+      if (decided != null) 'decided': decided,
+      if (kept != null) 'kept': kept,
+      if (deleted != null) 'deleted': deleted,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalMediaStatsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? userId,
+    Value<String>? deviceId,
+    Value<String?>? deviceName,
+    Value<int>? total,
+    Value<int>? decided,
+    Value<int>? kept,
+    Value<int>? deleted,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return LocalMediaStatsCompanion(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      deviceId: deviceId ?? this.deviceId,
+      deviceName: deviceName ?? this.deviceName,
+      total: total ?? this.total,
+      decided: decided ?? this.decided,
+      kept: kept ?? this.kept,
+      deleted: deleted ?? this.deleted,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (deviceId.present) {
+      map['device_id'] = Variable<String>(deviceId.value);
+    }
+    if (deviceName.present) {
+      map['device_name'] = Variable<String>(deviceName.value);
+    }
+    if (total.present) {
+      map['total'] = Variable<int>(total.value);
+    }
+    if (decided.present) {
+      map['decided'] = Variable<int>(decided.value);
+    }
+    if (kept.present) {
+      map['kept'] = Variable<int>(kept.value);
+    }
+    if (deleted.present) {
+      map['deleted'] = Variable<int>(deleted.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalMediaStatsCompanion(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('deviceId: $deviceId, ')
+          ..write('deviceName: $deviceName, ')
+          ..write('total: $total, ')
+          ..write('decided: $decided, ')
+          ..write('kept: $kept, ')
+          ..write('deleted: $deleted, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $SyncOutboxTable extends SyncOutbox
     with TableInfo<$SyncOutboxTable, SyncOutboxData> {
   @override
@@ -2626,6 +4320,14 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   );
   late final $LocalNotificationsTable localNotifications =
       $LocalNotificationsTable(this);
+  late final $LocalMediaAssetsTable localMediaAssets = $LocalMediaAssetsTable(
+    this,
+  );
+  late final $LocalMediaDecisionsTable localMediaDecisions =
+      $LocalMediaDecisionsTable(this);
+  late final $LocalMediaStatsTable localMediaStats = $LocalMediaStatsTable(
+    this,
+  );
   late final $SyncOutboxTable syncOutbox = $SyncOutboxTable(this);
   late final $SyncStateTable syncState = $SyncStateTable(this);
   @override
@@ -2636,6 +4338,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     localTransactions,
     localCategories,
     localNotifications,
+    localMediaAssets,
+    localMediaDecisions,
+    localMediaStats,
     syncOutbox,
     syncState,
   ];
@@ -3623,6 +5328,872 @@ typedef $$LocalNotificationsTableProcessedTableManager =
       LocalNotification,
       PrefetchHooks Function()
     >;
+typedef $$LocalMediaAssetsTableCreateCompanionBuilder =
+    LocalMediaAssetsCompanion Function({
+      required String assetId,
+      required String deviceId,
+      required String type,
+      Value<String?> albumId,
+      Value<String?> albumName,
+      Value<String?> relativePath,
+      Value<int> sizeBytes,
+      Value<int?> width,
+      Value<int?> height,
+      Value<int?> durationSec,
+      Value<DateTime?> createdDate,
+      Value<String?> title,
+      required DateTime indexedAt,
+      Value<int> rowid,
+    });
+typedef $$LocalMediaAssetsTableUpdateCompanionBuilder =
+    LocalMediaAssetsCompanion Function({
+      Value<String> assetId,
+      Value<String> deviceId,
+      Value<String> type,
+      Value<String?> albumId,
+      Value<String?> albumName,
+      Value<String?> relativePath,
+      Value<int> sizeBytes,
+      Value<int?> width,
+      Value<int?> height,
+      Value<int?> durationSec,
+      Value<DateTime?> createdDate,
+      Value<String?> title,
+      Value<DateTime> indexedAt,
+      Value<int> rowid,
+    });
+
+class $$LocalMediaAssetsTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalMediaAssetsTable> {
+  $$LocalMediaAssetsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get assetId => $composableBuilder(
+    column: $table.assetId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get deviceId => $composableBuilder(
+    column: $table.deviceId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get albumId => $composableBuilder(
+    column: $table.albumId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get albumName => $composableBuilder(
+    column: $table.albumName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get relativePath => $composableBuilder(
+    column: $table.relativePath,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get sizeBytes => $composableBuilder(
+    column: $table.sizeBytes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get width => $composableBuilder(
+    column: $table.width,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get height => $composableBuilder(
+    column: $table.height,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get durationSec => $composableBuilder(
+    column: $table.durationSec,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdDate => $composableBuilder(
+    column: $table.createdDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get indexedAt => $composableBuilder(
+    column: $table.indexedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LocalMediaAssetsTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalMediaAssetsTable> {
+  $$LocalMediaAssetsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get assetId => $composableBuilder(
+    column: $table.assetId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get deviceId => $composableBuilder(
+    column: $table.deviceId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get albumId => $composableBuilder(
+    column: $table.albumId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get albumName => $composableBuilder(
+    column: $table.albumName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get relativePath => $composableBuilder(
+    column: $table.relativePath,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get sizeBytes => $composableBuilder(
+    column: $table.sizeBytes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get width => $composableBuilder(
+    column: $table.width,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get height => $composableBuilder(
+    column: $table.height,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get durationSec => $composableBuilder(
+    column: $table.durationSec,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdDate => $composableBuilder(
+    column: $table.createdDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get indexedAt => $composableBuilder(
+    column: $table.indexedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LocalMediaAssetsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalMediaAssetsTable> {
+  $$LocalMediaAssetsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get assetId =>
+      $composableBuilder(column: $table.assetId, builder: (column) => column);
+
+  GeneratedColumn<String> get deviceId =>
+      $composableBuilder(column: $table.deviceId, builder: (column) => column);
+
+  GeneratedColumn<String> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => column);
+
+  GeneratedColumn<String> get albumId =>
+      $composableBuilder(column: $table.albumId, builder: (column) => column);
+
+  GeneratedColumn<String> get albumName =>
+      $composableBuilder(column: $table.albumName, builder: (column) => column);
+
+  GeneratedColumn<String> get relativePath => $composableBuilder(
+    column: $table.relativePath,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get sizeBytes =>
+      $composableBuilder(column: $table.sizeBytes, builder: (column) => column);
+
+  GeneratedColumn<int> get width =>
+      $composableBuilder(column: $table.width, builder: (column) => column);
+
+  GeneratedColumn<int> get height =>
+      $composableBuilder(column: $table.height, builder: (column) => column);
+
+  GeneratedColumn<int> get durationSec => $composableBuilder(
+    column: $table.durationSec,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdDate => $composableBuilder(
+    column: $table.createdDate,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get indexedAt =>
+      $composableBuilder(column: $table.indexedAt, builder: (column) => column);
+}
+
+class $$LocalMediaAssetsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LocalMediaAssetsTable,
+          LocalMediaAsset,
+          $$LocalMediaAssetsTableFilterComposer,
+          $$LocalMediaAssetsTableOrderingComposer,
+          $$LocalMediaAssetsTableAnnotationComposer,
+          $$LocalMediaAssetsTableCreateCompanionBuilder,
+          $$LocalMediaAssetsTableUpdateCompanionBuilder,
+          (
+            LocalMediaAsset,
+            BaseReferences<
+              _$AppDatabase,
+              $LocalMediaAssetsTable,
+              LocalMediaAsset
+            >,
+          ),
+          LocalMediaAsset,
+          PrefetchHooks Function()
+        > {
+  $$LocalMediaAssetsTableTableManager(
+    _$AppDatabase db,
+    $LocalMediaAssetsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalMediaAssetsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LocalMediaAssetsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LocalMediaAssetsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> assetId = const Value.absent(),
+                Value<String> deviceId = const Value.absent(),
+                Value<String> type = const Value.absent(),
+                Value<String?> albumId = const Value.absent(),
+                Value<String?> albumName = const Value.absent(),
+                Value<String?> relativePath = const Value.absent(),
+                Value<int> sizeBytes = const Value.absent(),
+                Value<int?> width = const Value.absent(),
+                Value<int?> height = const Value.absent(),
+                Value<int?> durationSec = const Value.absent(),
+                Value<DateTime?> createdDate = const Value.absent(),
+                Value<String?> title = const Value.absent(),
+                Value<DateTime> indexedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalMediaAssetsCompanion(
+                assetId: assetId,
+                deviceId: deviceId,
+                type: type,
+                albumId: albumId,
+                albumName: albumName,
+                relativePath: relativePath,
+                sizeBytes: sizeBytes,
+                width: width,
+                height: height,
+                durationSec: durationSec,
+                createdDate: createdDate,
+                title: title,
+                indexedAt: indexedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String assetId,
+                required String deviceId,
+                required String type,
+                Value<String?> albumId = const Value.absent(),
+                Value<String?> albumName = const Value.absent(),
+                Value<String?> relativePath = const Value.absent(),
+                Value<int> sizeBytes = const Value.absent(),
+                Value<int?> width = const Value.absent(),
+                Value<int?> height = const Value.absent(),
+                Value<int?> durationSec = const Value.absent(),
+                Value<DateTime?> createdDate = const Value.absent(),
+                Value<String?> title = const Value.absent(),
+                required DateTime indexedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => LocalMediaAssetsCompanion.insert(
+                assetId: assetId,
+                deviceId: deviceId,
+                type: type,
+                albumId: albumId,
+                albumName: albumName,
+                relativePath: relativePath,
+                sizeBytes: sizeBytes,
+                width: width,
+                height: height,
+                durationSec: durationSec,
+                createdDate: createdDate,
+                title: title,
+                indexedAt: indexedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LocalMediaAssetsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LocalMediaAssetsTable,
+      LocalMediaAsset,
+      $$LocalMediaAssetsTableFilterComposer,
+      $$LocalMediaAssetsTableOrderingComposer,
+      $$LocalMediaAssetsTableAnnotationComposer,
+      $$LocalMediaAssetsTableCreateCompanionBuilder,
+      $$LocalMediaAssetsTableUpdateCompanionBuilder,
+      (
+        LocalMediaAsset,
+        BaseReferences<_$AppDatabase, $LocalMediaAssetsTable, LocalMediaAsset>,
+      ),
+      LocalMediaAsset,
+      PrefetchHooks Function()
+    >;
+typedef $$LocalMediaDecisionsTableCreateCompanionBuilder =
+    LocalMediaDecisionsCompanion Function({
+      required String assetId,
+      required String deviceId,
+      required String decision,
+      Value<bool> pendingDelete,
+      required DateTime decidedAt,
+      Value<int> rowid,
+    });
+typedef $$LocalMediaDecisionsTableUpdateCompanionBuilder =
+    LocalMediaDecisionsCompanion Function({
+      Value<String> assetId,
+      Value<String> deviceId,
+      Value<String> decision,
+      Value<bool> pendingDelete,
+      Value<DateTime> decidedAt,
+      Value<int> rowid,
+    });
+
+class $$LocalMediaDecisionsTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalMediaDecisionsTable> {
+  $$LocalMediaDecisionsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get assetId => $composableBuilder(
+    column: $table.assetId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get deviceId => $composableBuilder(
+    column: $table.deviceId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get decision => $composableBuilder(
+    column: $table.decision,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get pendingDelete => $composableBuilder(
+    column: $table.pendingDelete,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get decidedAt => $composableBuilder(
+    column: $table.decidedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LocalMediaDecisionsTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalMediaDecisionsTable> {
+  $$LocalMediaDecisionsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get assetId => $composableBuilder(
+    column: $table.assetId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get deviceId => $composableBuilder(
+    column: $table.deviceId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get decision => $composableBuilder(
+    column: $table.decision,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get pendingDelete => $composableBuilder(
+    column: $table.pendingDelete,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get decidedAt => $composableBuilder(
+    column: $table.decidedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LocalMediaDecisionsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalMediaDecisionsTable> {
+  $$LocalMediaDecisionsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get assetId =>
+      $composableBuilder(column: $table.assetId, builder: (column) => column);
+
+  GeneratedColumn<String> get deviceId =>
+      $composableBuilder(column: $table.deviceId, builder: (column) => column);
+
+  GeneratedColumn<String> get decision =>
+      $composableBuilder(column: $table.decision, builder: (column) => column);
+
+  GeneratedColumn<bool> get pendingDelete => $composableBuilder(
+    column: $table.pendingDelete,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get decidedAt =>
+      $composableBuilder(column: $table.decidedAt, builder: (column) => column);
+}
+
+class $$LocalMediaDecisionsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LocalMediaDecisionsTable,
+          LocalMediaDecision,
+          $$LocalMediaDecisionsTableFilterComposer,
+          $$LocalMediaDecisionsTableOrderingComposer,
+          $$LocalMediaDecisionsTableAnnotationComposer,
+          $$LocalMediaDecisionsTableCreateCompanionBuilder,
+          $$LocalMediaDecisionsTableUpdateCompanionBuilder,
+          (
+            LocalMediaDecision,
+            BaseReferences<
+              _$AppDatabase,
+              $LocalMediaDecisionsTable,
+              LocalMediaDecision
+            >,
+          ),
+          LocalMediaDecision,
+          PrefetchHooks Function()
+        > {
+  $$LocalMediaDecisionsTableTableManager(
+    _$AppDatabase db,
+    $LocalMediaDecisionsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalMediaDecisionsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LocalMediaDecisionsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$LocalMediaDecisionsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> assetId = const Value.absent(),
+                Value<String> deviceId = const Value.absent(),
+                Value<String> decision = const Value.absent(),
+                Value<bool> pendingDelete = const Value.absent(),
+                Value<DateTime> decidedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalMediaDecisionsCompanion(
+                assetId: assetId,
+                deviceId: deviceId,
+                decision: decision,
+                pendingDelete: pendingDelete,
+                decidedAt: decidedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String assetId,
+                required String deviceId,
+                required String decision,
+                Value<bool> pendingDelete = const Value.absent(),
+                required DateTime decidedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => LocalMediaDecisionsCompanion.insert(
+                assetId: assetId,
+                deviceId: deviceId,
+                decision: decision,
+                pendingDelete: pendingDelete,
+                decidedAt: decidedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LocalMediaDecisionsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LocalMediaDecisionsTable,
+      LocalMediaDecision,
+      $$LocalMediaDecisionsTableFilterComposer,
+      $$LocalMediaDecisionsTableOrderingComposer,
+      $$LocalMediaDecisionsTableAnnotationComposer,
+      $$LocalMediaDecisionsTableCreateCompanionBuilder,
+      $$LocalMediaDecisionsTableUpdateCompanionBuilder,
+      (
+        LocalMediaDecision,
+        BaseReferences<
+          _$AppDatabase,
+          $LocalMediaDecisionsTable,
+          LocalMediaDecision
+        >,
+      ),
+      LocalMediaDecision,
+      PrefetchHooks Function()
+    >;
+typedef $$LocalMediaStatsTableCreateCompanionBuilder =
+    LocalMediaStatsCompanion Function({
+      required String id,
+      required String userId,
+      required String deviceId,
+      Value<String?> deviceName,
+      Value<int> total,
+      Value<int> decided,
+      Value<int> kept,
+      Value<int> deleted,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$LocalMediaStatsTableUpdateCompanionBuilder =
+    LocalMediaStatsCompanion Function({
+      Value<String> id,
+      Value<String> userId,
+      Value<String> deviceId,
+      Value<String?> deviceName,
+      Value<int> total,
+      Value<int> decided,
+      Value<int> kept,
+      Value<int> deleted,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$LocalMediaStatsTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalMediaStatsTable> {
+  $$LocalMediaStatsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get deviceId => $composableBuilder(
+    column: $table.deviceId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get deviceName => $composableBuilder(
+    column: $table.deviceName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get total => $composableBuilder(
+    column: $table.total,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get decided => $composableBuilder(
+    column: $table.decided,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get kept => $composableBuilder(
+    column: $table.kept,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get deleted => $composableBuilder(
+    column: $table.deleted,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LocalMediaStatsTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalMediaStatsTable> {
+  $$LocalMediaStatsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get deviceId => $composableBuilder(
+    column: $table.deviceId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get deviceName => $composableBuilder(
+    column: $table.deviceName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get total => $composableBuilder(
+    column: $table.total,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get decided => $composableBuilder(
+    column: $table.decided,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get kept => $composableBuilder(
+    column: $table.kept,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get deleted => $composableBuilder(
+    column: $table.deleted,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LocalMediaStatsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalMediaStatsTable> {
+  $$LocalMediaStatsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get userId =>
+      $composableBuilder(column: $table.userId, builder: (column) => column);
+
+  GeneratedColumn<String> get deviceId =>
+      $composableBuilder(column: $table.deviceId, builder: (column) => column);
+
+  GeneratedColumn<String> get deviceName => $composableBuilder(
+    column: $table.deviceName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get total =>
+      $composableBuilder(column: $table.total, builder: (column) => column);
+
+  GeneratedColumn<int> get decided =>
+      $composableBuilder(column: $table.decided, builder: (column) => column);
+
+  GeneratedColumn<int> get kept =>
+      $composableBuilder(column: $table.kept, builder: (column) => column);
+
+  GeneratedColumn<int> get deleted =>
+      $composableBuilder(column: $table.deleted, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$LocalMediaStatsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LocalMediaStatsTable,
+          LocalMediaStat,
+          $$LocalMediaStatsTableFilterComposer,
+          $$LocalMediaStatsTableOrderingComposer,
+          $$LocalMediaStatsTableAnnotationComposer,
+          $$LocalMediaStatsTableCreateCompanionBuilder,
+          $$LocalMediaStatsTableUpdateCompanionBuilder,
+          (
+            LocalMediaStat,
+            BaseReferences<
+              _$AppDatabase,
+              $LocalMediaStatsTable,
+              LocalMediaStat
+            >,
+          ),
+          LocalMediaStat,
+          PrefetchHooks Function()
+        > {
+  $$LocalMediaStatsTableTableManager(
+    _$AppDatabase db,
+    $LocalMediaStatsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalMediaStatsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LocalMediaStatsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LocalMediaStatsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> userId = const Value.absent(),
+                Value<String> deviceId = const Value.absent(),
+                Value<String?> deviceName = const Value.absent(),
+                Value<int> total = const Value.absent(),
+                Value<int> decided = const Value.absent(),
+                Value<int> kept = const Value.absent(),
+                Value<int> deleted = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalMediaStatsCompanion(
+                id: id,
+                userId: userId,
+                deviceId: deviceId,
+                deviceName: deviceName,
+                total: total,
+                decided: decided,
+                kept: kept,
+                deleted: deleted,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String userId,
+                required String deviceId,
+                Value<String?> deviceName = const Value.absent(),
+                Value<int> total = const Value.absent(),
+                Value<int> decided = const Value.absent(),
+                Value<int> kept = const Value.absent(),
+                Value<int> deleted = const Value.absent(),
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => LocalMediaStatsCompanion.insert(
+                id: id,
+                userId: userId,
+                deviceId: deviceId,
+                deviceName: deviceName,
+                total: total,
+                decided: decided,
+                kept: kept,
+                deleted: deleted,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LocalMediaStatsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LocalMediaStatsTable,
+      LocalMediaStat,
+      $$LocalMediaStatsTableFilterComposer,
+      $$LocalMediaStatsTableOrderingComposer,
+      $$LocalMediaStatsTableAnnotationComposer,
+      $$LocalMediaStatsTableCreateCompanionBuilder,
+      $$LocalMediaStatsTableUpdateCompanionBuilder,
+      (
+        LocalMediaStat,
+        BaseReferences<_$AppDatabase, $LocalMediaStatsTable, LocalMediaStat>,
+      ),
+      LocalMediaStat,
+      PrefetchHooks Function()
+    >;
 typedef $$SyncOutboxTableCreateCompanionBuilder =
     SyncOutboxCompanion Function({
       required String id,
@@ -3999,6 +6570,12 @@ class $AppDatabaseManager {
       $$LocalCategoriesTableTableManager(_db, _db.localCategories);
   $$LocalNotificationsTableTableManager get localNotifications =>
       $$LocalNotificationsTableTableManager(_db, _db.localNotifications);
+  $$LocalMediaAssetsTableTableManager get localMediaAssets =>
+      $$LocalMediaAssetsTableTableManager(_db, _db.localMediaAssets);
+  $$LocalMediaDecisionsTableTableManager get localMediaDecisions =>
+      $$LocalMediaDecisionsTableTableManager(_db, _db.localMediaDecisions);
+  $$LocalMediaStatsTableTableManager get localMediaStats =>
+      $$LocalMediaStatsTableTableManager(_db, _db.localMediaStats);
   $$SyncOutboxTableTableManager get syncOutbox =>
       $$SyncOutboxTableTableManager(_db, _db.syncOutbox);
   $$SyncStateTableTableManager get syncState =>

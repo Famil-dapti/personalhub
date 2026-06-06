@@ -61,6 +61,63 @@ class LocalNotifications extends Table {
   Set<Column> get primaryKey => {id};
 }
 
+/// Local-only index of every photo/video on this device (Phase 3 Media
+/// Cleaner). Never synced to Supabase — `assetId` and file metadata are
+/// device-specific. Rebuilt by a full scan on first run and kept current by a
+/// per-launch delta. The working set the swipe deck draws from.
+class LocalMediaAssets extends Table {
+  TextColumn get assetId => text()(); // photo_manager AssetEntity.id
+  TextColumn get deviceId => text()();
+  TextColumn get type => text()(); // 'image' | 'video'
+  TextColumn get albumId => text().nullable()();
+  TextColumn get albumName => text().nullable()();
+  TextColumn get relativePath => text().nullable()(); // for screenshot detection
+  IntColumn get sizeBytes => integer().withDefault(const Constant(0))();
+  IntColumn get width => integer().nullable()();
+  IntColumn get height => integer().nullable()();
+  IntColumn get durationSec => integer().nullable()(); // videos only
+  DateTimeColumn get createdDate => dateTime().nullable()(); // asset capture time
+  TextColumn get title => text().nullable()();
+  DateTimeColumn get indexedAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {assetId};
+}
+
+/// Local-only keep/delete/favorite/later decisions (Phase 3). Never synced as
+/// individual rows (only per-device aggregates go to Supabase). Persists even
+/// after the asset is deleted from the device so cumulative stats survive.
+/// `decision`: 'keep' | 'delete' | 'favorite' | 'later'. `pendingDelete` is
+/// true for a delete not yet executed against device storage.
+class LocalMediaDecisions extends Table {
+  TextColumn get assetId => text()();
+  TextColumn get deviceId => text()();
+  TextColumn get decision => text()();
+  BoolColumn get pendingDelete => boolean().withDefault(const Constant(false))();
+  DateTimeColumn get decidedAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {assetId};
+}
+
+/// Mirror of the Supabase `media_stats` table — per-device aggregate counters
+/// (total / decided / kept / deleted) so every device and the web app can show
+/// each phone's cleanup progress. This is the ONLY media data that syncs.
+class LocalMediaStats extends Table {
+  TextColumn get id => text()(); // stable per-device uuid (push upsert key)
+  TextColumn get userId => text()();
+  TextColumn get deviceId => text()();
+  TextColumn get deviceName => text().nullable()();
+  IntColumn get total => integer().withDefault(const Constant(0))();
+  IntColumn get decided => integer().withDefault(const Constant(0))();
+  IntColumn get kept => integer().withDefault(const Constant(0))();
+  IntColumn get deleted => integer().withDefault(const Constant(0))();
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
 /// Pending local mutations to push to Supabase, drained oldest-first on sync.
 /// `op` is 'upsert' or 'delete'; `payload` is a JSON row snapshot for upserts.
 class SyncOutbox extends Table {

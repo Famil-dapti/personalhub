@@ -61,16 +61,27 @@ is_transaction bool default false
 raw_json jsonb                 -- full notification payload
 ```
 
-### `media_decisions` table
+### media decisions — LOCAL-ONLY (revised Phase 3, 2026-06-06)
+Individual media decisions are **not** a Supabase table. They live only in Drift
+(`LocalMediaDecisions`, keyed by `assetId + deviceId`) and are never synced — they are
+per-device and high-volume, with no cross-device merge need. Only per-device **aggregate**
+stats sync (below).
+
+### `media_stats` table (Phase 3 — per-device aggregate only)
 ```sql
 id uuid primary key
 user_id uuid references auth.users
-file_path text
-decision text                  -- 'keep' | 'delete' | 'pending'
-decided_at timestamptz
+device_id text                 -- which phone these counters belong to
+device_name text
+total int                      -- indexed assets
+decided int                    -- reviewed (kept/deleted/favorite/later)
+kept int
+deleted int                    -- cumulative; survives asset removal
+updated_at timestamptz         -- server set_updated_at trigger; delta-pull watermark
 ```
+Migration `20260607090000_media_stats.sql` (RLS + trigger). Shown on phones AND web (read-only).
 
-All tables: RLS enabled, `user_id = auth.uid()` policy.
+All Supabase tables: RLS enabled, `user_id = auth.uid()` policy.
 
 ## Project Phases
 
@@ -130,13 +141,24 @@ Phase 1.2 offline E2E test).
 - [ ] Foreground service for capture hardening (MIUI battery-kill resilience) — optional, deferred
 - [ ] Per-device attribution (two phones / one account) — REQUIRED before Phase 3
 
-### Phase 3 — Media Cleaner
-- [ ] Scan device media (photo_manager package)
-- [ ] Tinder-style swipe card stack UI
-- [ ] Swipe right = keep, swipe left = delete (moves to trash queue)
-- [ ] Batch confirm delete screen
-- [ ] Filter: photos only / videos only / all
-- [ ] Progress stats: freed space estimate
+### Phase 3 — Media Cleaner — code complete 2026-06-06 (on-device verify deferred)
+
+Android/mobile-only; web is a read-only stats view (no device file access).
+
+- [x] Scan device media (photo_manager) — first-launch FULL scan + per-launch DELTA (new/removed);
+      background WorkManager deferred (unreliable on MIUI battery-kill)
+- [x] Tinder-style swipe card stack UI (flutter_card_swiper)
+- [x] **4-way swipe**: Left=Delete, Right=Keep, Up=Favorite/Protect, Down=Later (defer) — plus
+      mirror action buttons + Undo (Geri al)
+- [x] Pending-delete queue + batch confirm screen -> OS MediaStore trash dialog
+      (`PhotoManager.editor.deleteWithIds`)
+- [x] Filter: Tumu / Foto / Video + rich sort (album/folder, date, size-largest, screenshots-only,
+      random; "undecided only" is the default queue)
+- [x] Progress stats: total / decided / kept / deleted per device
+- [x] **Decisions LOCAL-ONLY** (Drift, keyed assetId+deviceId; never re-shown; never synced as rows)
+- [x] **Only per-device AGGREGATE stats sync** (Supabase `media_stats`, shown on phones + web read-only)
+- [ ] On-device verification (deferred to the same parked Android test session as 1.2/2 re-verify)
+- [ ] Deploy `media_stats` migration to Supabase (written, not yet applied)
 
 ### Phase 5 — Transaction Attachments (future — after all 3 apps ready)
 - [ ] Optional image per transaction (receipt/proof)
@@ -152,6 +174,12 @@ Phase 1.2 offline E2E test).
 - [ ] Auto-create transaction draft from matching notification
 - [ ] User confirms or dismisses draft
 - [ ] Link notification_id to transaction record
+
+### Phase 6 — Cloud Photos (future idea)
+- [ ] Connect Google Photos account(s) via OAuth so Media Cleaner can also review/act on cloud photos
+- [ ] Mirror the same swipe-review + keep/delete flow over Google Photos library items
+- Open questions (decide when built): Google Photos Library API scopes/quota, delete-vs-archive
+  semantics in the cloud, how cloud decisions relate to the local decision store.
 
 ## Folder Structure (planned)
 
