@@ -1,9 +1,11 @@
 # Project-state.md
 
 ## Current Phase
-**Phase 1.2 — Offline queue (Drift)** ✅ CODE COMPLETE (analyze clean, web build OK, migration live on remote).
-Parallel: Claude Design brief delivered (awaiting returned mockups to implement).
-Next: manual end-to-end offline test on device/web, then commit + deploy.
+**Phase 1.2 — Offline queue (Drift)** ✅ CODE COMPLETE, COMMITTED, MERGED TO MAIN, DEPLOYED LIVE.
+Partially verified (launch + production wasm serving). Authenticated offline E2E (add -> persist ->
+sync) NOT yet runtime-verified — deferred to on-device (Android phone) test next session.
+Parallel: Claude Design mockups returned (docs/design/personalhub/) — implementation happening on `dev`
+in a separate chat. Design impl + Phase 1.2 on-device test are the two open threads.
 
 ## Status
 Phase 1.1 built, merged to main, and DEPLOYED. Web app live at
@@ -39,7 +41,11 @@ Custom domain DEFERRED — staying on github.io URL for now; will migrate host l
 - [x] Live: https://famil-dapti.github.io/personalhub/ (verified HTTP 200); login account created
 
 ## In Progress
-Nothing. Phase 1.1 done and deployed. Session closed for handoff to a new chat.
+Two parallel threads handed off to new chats:
+1. **Design implementation** — Claude Design mockups returned (`docs/design/personalhub/`), being
+   implemented on `dev` in a separate chat.
+2. **Phase 1.2 on-device test** — build to Android phone, verify offline add/delete + reconnect sync.
+Phase 1.1 + Phase 1.2 (code) + UX polish are all committed, merged to main, and deployed live.
 
 ## Next Task — new session (two tracks)
 
@@ -71,10 +77,28 @@ Nothing. Phase 1.1 done and deployed. Session closed for handoff to a new chat.
   URIs resolve under `/personalhub/` base-href. GitHub Pages = IndexedDB (no OPFS headers).
 - `flutter analyze` clean; `flutter build web` OK; codegen `app_database.g.dart` committed.
 
-**Phase 1.2 — remaining before done**
-- Manual end-to-end test: add/delete offline, reconnect, confirm sync both directions + multi-device.
-- Commit to `dev` and deploy (user controls commit/push).
-- Known: `unsafeIndexedDb` not safe across multiple simultaneously-writing tabs (single-user, low risk).
+**Phase 1.2 — verify status (2026-06-06)**
+- ✅ App launches clean on Chrome (debug run): Supabase init, no startup crash.
+- ✅ **Production verified**: live https://famil-dapti.github.io/personalhub/ serves
+  `sqlite3.wasm` (application/wasm) + `drift_worker.js` + base-href `/personalhub/`; Pages deploy
+  run = success. The risky web WASM-load path is correctly wired for deploy.
+- ✅ Release artifact (`build/web`) serves the same correctly.
+- ⛔ **NOT verified (deferred to on-device next session):** authenticated offline flow
+  (login -> add -> instant local persist -> Drift DB open -> sync row appears in Supabase ->
+  delete -> reconnect). No drivable surface this session: macOS desktop not configured
+  (only android+web targets), no Android device/emulator connected, Flutter-web canvas not
+  scriptable. Plan: build to the Android phone next session, test offline add/delete + reconnect
+  sync there; debug if issues.
+- Test login account: famil.mammadov@dapti.az (password held by user, not stored here).
+
+**Phase 1.2 — known gotchas (for next session)**
+- ⚠️ **Debug `flutter run -d chrome` does NOT serve `sqlite3.wasm`/`drift_worker.js` (404)** even
+  though other web/ assets serve fine — so Drift-on-web fails in *local debug web* runs. Production
+  (release/Pages) is unaffected (verified). To test web offline locally, serve the release build
+  (`flutter build web` then static-serve `build/web`) instead of `flutter run -d chrome`.
+- `unsafeIndexedDb` not safe across multiple simultaneously-writing tabs (single-user, low risk).
+- pubspec.lock is now committed (un-ignored) so CI resolves drift 2.28.2 / sqlite3 2.9.4 matching
+  the committed `web/` wasm+worker binaries — do NOT bump drift/sqlite3 without refreshing those files.
 
 **Deferred / backlog**
 - Custom domain: migrate host (Cloudflare Pages `personalhub.pages.dev`) or buy cheap domain for a nicer URL
