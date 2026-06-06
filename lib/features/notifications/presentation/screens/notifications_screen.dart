@@ -4,12 +4,15 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/sync/sync_providers.dart';
 import '../../../../core/utils/formatters.dart';
+import '../../../../core/widgets/app_feedback.dart';
 import '../../../../core/widgets/app_spacing.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../../../../core/widgets/skeleton.dart';
 import '../../data/models/notification_model.dart';
+import '../providers/capture_providers.dart';
 import '../providers/notifications_provider.dart';
 import '../widgets/capture_runs_on_phone_banner.dart';
+import '../widgets/permission_screen.dart';
 import '../widgets/detected_transaction_card.dart';
 import '../widgets/filter_chip_row.dart';
 import '../widgets/notification_card.dart';
@@ -20,29 +23,147 @@ import '../widgets/search_field.dart';
 // Above this width the archive switches to a master-detail layout.
 const double _wideBreakpoint = 840;
 
-class NotificationsScreen extends ConsumerWidget {
+class NotificationsScreen extends ConsumerStatefulWidget {
   const NotificationsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<NotificationsScreen> createState() =>
+      _NotificationsScreenState();
+}
+
+class _NotificationsScreenState extends ConsumerState<NotificationsScreen>
+    with WidgetsBindingObserver {
+  bool _permissionDismissed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _drain());
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Returning from the settings screen / foregrounding may have granted
+    // access and buffered new notifications — re-check and drain.
+    if (state == AppLifecycleState.resumed) {
+      ref.invalidate(notificationPermissionProvider);
+      _drain();
+    }
+  }
+
+  Future<void> _drain() =>
+      ref.read(notificationCaptureControllerProvider).drainAndIngest();
+
+  Future<void> _clearAll() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Tum bildirimleri sil'),
+        content: const Text(
+          'Arsivdeki butun bildirimler hem bu cihazdan hem de '
+          'sunucudan silinecek. Bu islem geri alinamaz.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Vazgec'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Sil'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    final error = await ref.read(notificationsControllerProvider).clearAll();
+    if (!mounted) return;
+    if (error == null) {
+      AppFeedback.success(context, 'Bildirimler temizlendi');
+    } else {
+      AppFeedback.error(
+          context, 'Silinemedi. Internet baglantisini kontrol edin.');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final hasItems =
+        (ref.watch(notificationsProvider).valueOrNull ?? const []).isNotEmpty;
+    final devices = ref.watch(notificationDevicesProvider);
+    final deviceFilter = ref.watch(notificationDeviceFilterProvider);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Bildirimler'),
         actions: [
+          if (devices.length >= 2)
+            PopupMenuButton<String?>(
+              icon: Icon(
+                deviceFilter == null
+                    ? Icons.devices_outlined
+                    : Icons.smartphone,
+              ),
+              tooltip: 'Cihaza gore filtrele',
+              initialValue: deviceFilter,
+              onSelected: (value) => ref
+                  .read(notificationDeviceFilterProvider.notifier)
+                  .state = value,
+              itemBuilder: (context) => [
+                const PopupMenuItem<String?>(
+                  value: null,
+                  child: Text('Tum cihazlar'),
+                ),
+                for (final d in devices)
+                  PopupMenuItem<String?>(value: d, child: Text(d)),
+              ],
+            ),
           IconButton(
             icon: const Icon(Icons.sync),
             tooltip: 'Yenile',
-            onPressed: () => ref.read(syncServiceProvider).syncAll(),
+            onPressed: () async {
+              await _drain();
+              await ref.read(syncServiceProvider).syncAll();
+            },
           ),
+          if (hasItems)
+            IconButton(
+              icon: const Icon(Icons.delete_sweep_outlined),
+              tooltip: 'Tumunu temizle',
+              onPressed: _clearAll,
+            ),
         ],
       ),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          return constraints.maxWidth >= _wideBreakpoint
-              ? const _DesktopArchive()
-              : const _PhoneArchive();
-        },
-      ),
+      body: _body(),
+    );
+  }
+
+  Widget _body() {
+    final supported = ref.watch(captureSupportedProvider);
+    final granted = ref.watch(notificationPermissionProvider).valueOrNull;
+
+    // Permission gate: Android only, until the user grants or dismisses it.
+    if (supported && !_permissionDismissed && granted == false) {
+      return PermissionScreen(
+        onOpenSettings: () =>
+            ref.read(notificationCaptureServiceProvider).openSettings(),
+        onLater: () => setState(() => _permissionDismissed = true),
+      );
+    }
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return constraints.maxWidth >= _wideBreakpoint
+            ? const _DesktopArchive()
+            : const _PhoneArchive();
+      },
     );
   }
 }
@@ -145,6 +266,7 @@ class _ArchiveList extends ConsumerWidget {
     String? selectedId,
   ) {
     final rows = <Widget>[];
+    final showDevice = ref.watch(notificationDevicesProvider).length >= 2;
     DateTime? currentDay;
     for (final n in items) {
       final day = dayKey(n.displayTime);
@@ -155,6 +277,7 @@ class _ArchiveList extends ConsumerWidget {
       rows.add(
         NotificationCard(
           item: n,
+          showDevice: showDevice,
           selected: selectable && n.id == selectedId,
           onTap: () {
             ref.read(selectedNotificationIdProvider.notifier).state = n.id;
@@ -249,6 +372,20 @@ class NotificationDetailBody extends StatelessWidget {
                     style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant),
                   ),
+                  if ((item.deviceName ?? '').isNotEmpty)
+                    Row(
+                      children: [
+                        Icon(Icons.smartphone,
+                            size: 13,
+                            color: theme.colorScheme.onSurfaceVariant),
+                        const SizedBox(width: 4),
+                        Text(
+                          item.deviceName!,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant),
+                        ),
+                      ],
+                    ),
                 ],
               ),
             ),

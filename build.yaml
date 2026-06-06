@@ -1,0 +1,13 @@
+# Code generation config.
+#
+# This project uses hand-written Riverpod providers (no @riverpod annotations),
+# so the only generator we need is drift_dev (app_database.g.dart). The
+# riverpod_generator builder is disabled because (a) it produces nothing here and
+# (b) its analyzer pass crashes on the current SDK (visitDotShorthandInvocation),
+# which would otherwise fail the whole build. Re-enable it if @riverpod codegen
+# is ever introduced.
+targets:
+  $default:
+    builders:
+      riverpod_generator:
+        enabled: false

@@ -1367,6 +1367,28 @@ class $LocalNotificationsTable extends LocalNotifications
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _deviceIdMeta = const VerificationMeta(
+    'deviceId',
+  );
+  @override
+  late final GeneratedColumn<String> deviceId = GeneratedColumn<String>(
+    'device_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _deviceNameMeta = const VerificationMeta(
+    'deviceName',
+  );
+  @override
+  late final GeneratedColumn<String> deviceName = GeneratedColumn<String>(
+    'device_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -1389,6 +1411,8 @@ class $LocalNotificationsTable extends LocalNotifications
     postedAt,
     isTransaction,
     rawJson,
+    deviceId,
+    deviceName,
     createdAt,
   ];
   @override
@@ -1461,6 +1485,18 @@ class $LocalNotificationsTable extends LocalNotifications
         rawJson.isAcceptableOrUnknown(data['raw_json']!, _rawJsonMeta),
       );
     }
+    if (data.containsKey('device_id')) {
+      context.handle(
+        _deviceIdMeta,
+        deviceId.isAcceptableOrUnknown(data['device_id']!, _deviceIdMeta),
+      );
+    }
+    if (data.containsKey('device_name')) {
+      context.handle(
+        _deviceNameMeta,
+        deviceName.isAcceptableOrUnknown(data['device_name']!, _deviceNameMeta),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -1514,6 +1550,14 @@ class $LocalNotificationsTable extends LocalNotifications
         DriftSqlType.string,
         data['${effectivePrefix}raw_json'],
       ),
+      deviceId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}device_id'],
+      ),
+      deviceName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}device_name'],
+      ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -1538,6 +1582,8 @@ class LocalNotification extends DataClass
   final DateTime? postedAt;
   final bool isTransaction;
   final String? rawJson;
+  final String? deviceId;
+  final String? deviceName;
   final DateTime createdAt;
   const LocalNotification({
     required this.id,
@@ -1549,6 +1595,8 @@ class LocalNotification extends DataClass
     this.postedAt,
     required this.isTransaction,
     this.rawJson,
+    this.deviceId,
+    this.deviceName,
     required this.createdAt,
   });
   @override
@@ -1575,6 +1623,12 @@ class LocalNotification extends DataClass
     if (!nullToAbsent || rawJson != null) {
       map['raw_json'] = Variable<String>(rawJson);
     }
+    if (!nullToAbsent || deviceId != null) {
+      map['device_id'] = Variable<String>(deviceId);
+    }
+    if (!nullToAbsent || deviceName != null) {
+      map['device_name'] = Variable<String>(deviceName);
+    }
     map['created_at'] = Variable<DateTime>(createdAt);
     return map;
   }
@@ -1600,6 +1654,12 @@ class LocalNotification extends DataClass
       rawJson: rawJson == null && nullToAbsent
           ? const Value.absent()
           : Value(rawJson),
+      deviceId: deviceId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deviceId),
+      deviceName: deviceName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deviceName),
       createdAt: Value(createdAt),
     );
   }
@@ -1619,6 +1679,8 @@ class LocalNotification extends DataClass
       postedAt: serializer.fromJson<DateTime?>(json['postedAt']),
       isTransaction: serializer.fromJson<bool>(json['isTransaction']),
       rawJson: serializer.fromJson<String?>(json['rawJson']),
+      deviceId: serializer.fromJson<String?>(json['deviceId']),
+      deviceName: serializer.fromJson<String?>(json['deviceName']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
     );
   }
@@ -1635,6 +1697,8 @@ class LocalNotification extends DataClass
       'postedAt': serializer.toJson<DateTime?>(postedAt),
       'isTransaction': serializer.toJson<bool>(isTransaction),
       'rawJson': serializer.toJson<String?>(rawJson),
+      'deviceId': serializer.toJson<String?>(deviceId),
+      'deviceName': serializer.toJson<String?>(deviceName),
       'createdAt': serializer.toJson<DateTime>(createdAt),
     };
   }
@@ -1649,6 +1713,8 @@ class LocalNotification extends DataClass
     Value<DateTime?> postedAt = const Value.absent(),
     bool? isTransaction,
     Value<String?> rawJson = const Value.absent(),
+    Value<String?> deviceId = const Value.absent(),
+    Value<String?> deviceName = const Value.absent(),
     DateTime? createdAt,
   }) => LocalNotification(
     id: id ?? this.id,
@@ -1660,6 +1726,8 @@ class LocalNotification extends DataClass
     postedAt: postedAt.present ? postedAt.value : this.postedAt,
     isTransaction: isTransaction ?? this.isTransaction,
     rawJson: rawJson.present ? rawJson.value : this.rawJson,
+    deviceId: deviceId.present ? deviceId.value : this.deviceId,
+    deviceName: deviceName.present ? deviceName.value : this.deviceName,
     createdAt: createdAt ?? this.createdAt,
   );
   LocalNotification copyWithCompanion(LocalNotificationsCompanion data) {
@@ -1677,6 +1745,10 @@ class LocalNotification extends DataClass
           ? data.isTransaction.value
           : this.isTransaction,
       rawJson: data.rawJson.present ? data.rawJson.value : this.rawJson,
+      deviceId: data.deviceId.present ? data.deviceId.value : this.deviceId,
+      deviceName: data.deviceName.present
+          ? data.deviceName.value
+          : this.deviceName,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
     );
   }
@@ -1693,6 +1765,8 @@ class LocalNotification extends DataClass
           ..write('postedAt: $postedAt, ')
           ..write('isTransaction: $isTransaction, ')
           ..write('rawJson: $rawJson, ')
+          ..write('deviceId: $deviceId, ')
+          ..write('deviceName: $deviceName, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
@@ -1709,6 +1783,8 @@ class LocalNotification extends DataClass
     postedAt,
     isTransaction,
     rawJson,
+    deviceId,
+    deviceName,
     createdAt,
   );
   @override
@@ -1724,6 +1800,8 @@ class LocalNotification extends DataClass
           other.postedAt == this.postedAt &&
           other.isTransaction == this.isTransaction &&
           other.rawJson == this.rawJson &&
+          other.deviceId == this.deviceId &&
+          other.deviceName == this.deviceName &&
           other.createdAt == this.createdAt);
 }
 
@@ -1737,6 +1815,8 @@ class LocalNotificationsCompanion extends UpdateCompanion<LocalNotification> {
   final Value<DateTime?> postedAt;
   final Value<bool> isTransaction;
   final Value<String?> rawJson;
+  final Value<String?> deviceId;
+  final Value<String?> deviceName;
   final Value<DateTime> createdAt;
   final Value<int> rowid;
   const LocalNotificationsCompanion({
@@ -1749,6 +1829,8 @@ class LocalNotificationsCompanion extends UpdateCompanion<LocalNotification> {
     this.postedAt = const Value.absent(),
     this.isTransaction = const Value.absent(),
     this.rawJson = const Value.absent(),
+    this.deviceId = const Value.absent(),
+    this.deviceName = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
@@ -1762,6 +1844,8 @@ class LocalNotificationsCompanion extends UpdateCompanion<LocalNotification> {
     this.postedAt = const Value.absent(),
     this.isTransaction = const Value.absent(),
     this.rawJson = const Value.absent(),
+    this.deviceId = const Value.absent(),
+    this.deviceName = const Value.absent(),
     required DateTime createdAt,
     this.rowid = const Value.absent(),
   }) : id = Value(id),
@@ -1777,6 +1861,8 @@ class LocalNotificationsCompanion extends UpdateCompanion<LocalNotification> {
     Expression<DateTime>? postedAt,
     Expression<bool>? isTransaction,
     Expression<String>? rawJson,
+    Expression<String>? deviceId,
+    Expression<String>? deviceName,
     Expression<DateTime>? createdAt,
     Expression<int>? rowid,
   }) {
@@ -1790,6 +1876,8 @@ class LocalNotificationsCompanion extends UpdateCompanion<LocalNotification> {
       if (postedAt != null) 'posted_at': postedAt,
       if (isTransaction != null) 'is_transaction': isTransaction,
       if (rawJson != null) 'raw_json': rawJson,
+      if (deviceId != null) 'device_id': deviceId,
+      if (deviceName != null) 'device_name': deviceName,
       if (createdAt != null) 'created_at': createdAt,
       if (rowid != null) 'rowid': rowid,
     });
@@ -1805,6 +1893,8 @@ class LocalNotificationsCompanion extends UpdateCompanion<LocalNotification> {
     Value<DateTime?>? postedAt,
     Value<bool>? isTransaction,
     Value<String?>? rawJson,
+    Value<String?>? deviceId,
+    Value<String?>? deviceName,
     Value<DateTime>? createdAt,
     Value<int>? rowid,
   }) {
@@ -1818,6 +1908,8 @@ class LocalNotificationsCompanion extends UpdateCompanion<LocalNotification> {
       postedAt: postedAt ?? this.postedAt,
       isTransaction: isTransaction ?? this.isTransaction,
       rawJson: rawJson ?? this.rawJson,
+      deviceId: deviceId ?? this.deviceId,
+      deviceName: deviceName ?? this.deviceName,
       createdAt: createdAt ?? this.createdAt,
       rowid: rowid ?? this.rowid,
     );
@@ -1853,6 +1945,12 @@ class LocalNotificationsCompanion extends UpdateCompanion<LocalNotification> {
     if (rawJson.present) {
       map['raw_json'] = Variable<String>(rawJson.value);
     }
+    if (deviceId.present) {
+      map['device_id'] = Variable<String>(deviceId.value);
+    }
+    if (deviceName.present) {
+      map['device_name'] = Variable<String>(deviceName.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -1874,6 +1972,8 @@ class LocalNotificationsCompanion extends UpdateCompanion<LocalNotification> {
           ..write('postedAt: $postedAt, ')
           ..write('isTransaction: $isTransaction, ')
           ..write('rawJson: $rawJson, ')
+          ..write('deviceId: $deviceId, ')
+          ..write('deviceName: $deviceName, ')
           ..write('createdAt: $createdAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -3182,6 +3282,8 @@ typedef $$LocalNotificationsTableCreateCompanionBuilder =
       Value<DateTime?> postedAt,
       Value<bool> isTransaction,
       Value<String?> rawJson,
+      Value<String?> deviceId,
+      Value<String?> deviceName,
       required DateTime createdAt,
       Value<int> rowid,
     });
@@ -3196,6 +3298,8 @@ typedef $$LocalNotificationsTableUpdateCompanionBuilder =
       Value<DateTime?> postedAt,
       Value<bool> isTransaction,
       Value<String?> rawJson,
+      Value<String?> deviceId,
+      Value<String?> deviceName,
       Value<DateTime> createdAt,
       Value<int> rowid,
     });
@@ -3251,6 +3355,16 @@ class $$LocalNotificationsTableFilterComposer
 
   ColumnFilters<String> get rawJson => $composableBuilder(
     column: $table.rawJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get deviceId => $composableBuilder(
+    column: $table.deviceId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get deviceName => $composableBuilder(
+    column: $table.deviceName,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3314,6 +3428,16 @@ class $$LocalNotificationsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get deviceId => $composableBuilder(
+    column: $table.deviceId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get deviceName => $composableBuilder(
+    column: $table.deviceName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -3359,6 +3483,14 @@ class $$LocalNotificationsTableAnnotationComposer
 
   GeneratedColumn<String> get rawJson =>
       $composableBuilder(column: $table.rawJson, builder: (column) => column);
+
+  GeneratedColumn<String> get deviceId =>
+      $composableBuilder(column: $table.deviceId, builder: (column) => column);
+
+  GeneratedColumn<String> get deviceName => $composableBuilder(
+    column: $table.deviceName,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -3413,6 +3545,8 @@ class $$LocalNotificationsTableTableManager
                 Value<DateTime?> postedAt = const Value.absent(),
                 Value<bool> isTransaction = const Value.absent(),
                 Value<String?> rawJson = const Value.absent(),
+                Value<String?> deviceId = const Value.absent(),
+                Value<String?> deviceName = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => LocalNotificationsCompanion(
@@ -3425,6 +3559,8 @@ class $$LocalNotificationsTableTableManager
                 postedAt: postedAt,
                 isTransaction: isTransaction,
                 rawJson: rawJson,
+                deviceId: deviceId,
+                deviceName: deviceName,
                 createdAt: createdAt,
                 rowid: rowid,
               ),
@@ -3439,6 +3575,8 @@ class $$LocalNotificationsTableTableManager
                 Value<DateTime?> postedAt = const Value.absent(),
                 Value<bool> isTransaction = const Value.absent(),
                 Value<String?> rawJson = const Value.absent(),
+                Value<String?> deviceId = const Value.absent(),
+                Value<String?> deviceName = const Value.absent(),
                 required DateTime createdAt,
                 Value<int> rowid = const Value.absent(),
               }) => LocalNotificationsCompanion.insert(
@@ -3451,6 +3589,8 @@ class $$LocalNotificationsTableTableManager
                 postedAt: postedAt,
                 isTransaction: isTransaction,
                 rawJson: rawJson,
+                deviceId: deviceId,
+                deviceName: deviceName,
                 createdAt: createdAt,
                 rowid: rowid,
               ),

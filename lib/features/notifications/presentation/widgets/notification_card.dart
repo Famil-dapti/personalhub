@@ -13,11 +13,19 @@ class NotificationCard extends StatelessWidget {
     required this.item,
     this.selected = false,
     this.onTap,
+    this.showDevice = false,
   });
 
   final NotificationItem item;
   final bool selected;
   final VoidCallback? onTap;
+  // Whether to surface the capturing-device name (only useful with 2+ phones).
+  final bool showDevice;
+
+  String? get _deviceLabel =>
+      (showDevice && (item.deviceName ?? '').isNotEmpty)
+          ? item.deviceName
+          : null;
 
   @override
   Widget build(BuildContext context) {
@@ -79,9 +87,35 @@ class NotificationCard extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ],
-                    if (item.isTransaction) ...[
+                    if (item.isTransaction || _deviceLabel != null) ...[
                       const SizedBox(height: AppSpacing.sm),
-                      const TransactionBadge(),
+                      Row(
+                        children: [
+                          if (item.isTransaction) const TransactionBadge(),
+                          if (item.isTransaction && _deviceLabel != null)
+                            const SizedBox(width: AppSpacing.sm),
+                          if (_deviceLabel != null)
+                            Flexible(
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.smartphone,
+                                      size: 12, color: scheme.onSurfaceVariant),
+                                  const SizedBox(width: 4),
+                                  Flexible(
+                                    child: Text(
+                                      _deviceLabel!,
+                                      style: theme.textTheme.labelSmall?.copyWith(
+                                          color: scheme.onSurfaceVariant),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                        ],
+                      ),
                     ],
                   ],
                 ),

@@ -121,12 +121,14 @@ Phase 1.2 offline E2E test).
 - [x] Web read-only archive (capture-runs-on-phone banner)
 - [x] `flutter analyze` clean; `flutter build web` OK; tests pass
 
-**Phase 2B — Android native capture (write now, verify on-device)** — pending
-- [ ] Android NotificationListenerService (Kotlin)
-- [ ] Platform channel: Kotlin -> Flutter stream -> `NotificationsController.ingest()`
-- [ ] Foreground service with persistent notification
-- [ ] Phone permission/setup flow (grant NotificationListener access)
-- [ ] On-device verification: send self a message, confirm capture → archive → sync
+**Phase 2B — Android native capture** — built & device-verified 2026-06-06
+- [x] Android NotificationListenerService (Kotlin) → SharedPreferences buffer (approach B)
+- [x] Platform channel `personalhub/notifications` → Dart drain → `NotificationsController.ingest()`
+- [x] Phone permission/setup flow (deep-link to NotificationListener settings) + PermissionScreen
+- [x] Fixed missing INTERNET permission in main manifest (release-only network break)
+- [x] On-device verification: sent self a message → capture → archive → Supabase → web ✅
+- [ ] Foreground service for capture hardening (MIUI battery-kill resilience) — optional, deferred
+- [ ] Per-device attribution (two phones / one account) — REQUIRED before Phase 3
 
 ### Phase 3 — Media Cleaner
 - [ ] Scan device media (photo_manager package)
