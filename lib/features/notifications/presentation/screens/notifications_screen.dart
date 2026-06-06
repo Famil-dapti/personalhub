@@ -3,10 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/sync/sync_providers.dart';
+import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/app_feedback.dart';
 import '../../../../core/widgets/app_spacing.dart';
 import '../../../../core/widgets/empty_state.dart';
+import '../../../../core/widgets/responsive.dart';
 import '../../../../core/widgets/skeleton.dart';
 import '../../data/models/notification_model.dart';
 import '../../domain/notification_parser.dart';
@@ -20,9 +22,6 @@ import '../widgets/notification_card.dart';
 import '../widgets/notification_visuals.dart';
 import '../widgets/raw_payload_block.dart';
 import '../widgets/search_field.dart';
-
-// Above this width the archive switches to a master-detail layout.
-const double _wideBreakpoint = 840;
 
 class NotificationsScreen extends ConsumerStatefulWidget {
   const NotificationsScreen({super.key});
@@ -161,7 +160,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen>
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        return constraints.maxWidth >= _wideBreakpoint
+        return constraints.maxWidth >= kWideBreakpoint
             ? const _DesktopArchive()
             : const _PhoneArchive();
       },
@@ -242,10 +241,17 @@ class _ArchiveList extends ConsumerWidget {
         if (all.isEmpty) return const _EmptyArchive();
         final items = ref.watch(filteredNotificationsProvider);
         if (items.isEmpty) {
-          return const Center(child: Padding(
-            padding: EdgeInsets.all(AppSpacing.xxl),
-            child: Text('Sonuc yok'),
-          ));
+          final theme = Theme.of(context);
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.xxl),
+              child: Text(
+                'Sonuc yok',
+                style: theme.textTheme.bodyMedium
+                    ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+              ),
+            ),
+          );
         }
         final selectedId = ref.watch(selectedNotificationIdProvider);
         return RefreshIndicator(
@@ -305,7 +311,7 @@ class _DayHeader extends StatelessWidget {
       child: Text(
         label,
         style: theme.textTheme.labelLarge
-            ?.copyWith(color: theme.colorScheme.primary),
+            ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
       ),
     );
   }
@@ -328,10 +334,36 @@ class _DesktopDetailPane extends ConsumerWidget {
           AppSpacing.gapLg,
           Expanded(
             child: item == null
-                ? const Center(child: Text('Bir bildirim secin'))
+                ? const _SelectPrompt()
                 : SingleChildScrollView(
                     child: NotificationDetailBody(item: item, readOnly: true),
                   ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Desktop placeholder shown until the user picks a notification row.
+class _SelectPrompt extends StatelessWidget {
+  const _SelectPrompt();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.touch_app_outlined,
+              size: 40, color: scheme.onSurfaceVariant),
+          AppSpacing.gapMd,
+          Text(
+            'Bir bildirim secin',
+            style: theme.textTheme.titleMedium
+                ?.copyWith(color: scheme.onSurfaceVariant),
           ),
         ],
       ),
@@ -430,6 +462,11 @@ class _ListLoading extends StatelessWidget {
       child: ListView(
         physics: const NeverScrollableScrollPhysics(),
         children: const [
+          Padding(
+            padding: EdgeInsets.fromLTRB(
+                AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, AppSpacing.md),
+            child: SkeletonBox(height: 52, radius: AppRadii.pill),
+          ),
           SkeletonListTile(),
           SkeletonListTile(),
           SkeletonListTile(),
@@ -460,19 +497,24 @@ class _EmptyArchive extends StatelessWidget {
   }
 }
 
-class _ErrorView extends StatelessWidget {
+class _ErrorView extends ConsumerWidget {
   const _ErrorView({required this.message});
 
   final String message;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return ListView(
       children: [
         EmptyState(
           icon: Icons.cloud_off_outlined,
           title: 'Bir sorun olustu',
           message: message,
+          tone: EmptyStateTone.error,
+          action: FilledButton.tonal(
+            onPressed: () => ref.invalidate(notificationsProvider),
+            child: const Text('Tekrar dene'),
+          ),
         ),
       ],
     );

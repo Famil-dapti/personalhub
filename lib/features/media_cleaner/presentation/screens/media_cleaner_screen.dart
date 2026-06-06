@@ -5,12 +5,15 @@ import 'package:flutter_card_swiper/flutter_card_swiper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/app_feedback.dart';
 import '../../../../core/widgets/app_spacing.dart';
 import '../../../../core/widgets/empty_state.dart';
+import '../../../../core/widgets/responsive.dart';
 import '../../data/media_scanner.dart';
 import '../../data/models/media_models.dart';
 import '../providers/media_providers.dart';
+import '../widgets/format_bytes.dart';
 import '../widgets/media_card.dart';
 import '../widgets/media_filter_sheet.dart';
 import '../widgets/media_stats_panel.dart';
@@ -59,11 +62,12 @@ class _MediaPermissionView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Center(
       child: EmptyState(
-        icon: Icons.photo_library_outlined,
-        title: 'Foto ve video erisimi gerekli',
-        message: 'Medyani gozden gecirip temizleyebilmek icin galeri erisimi '
-            'vermen gerekiyor. Android 13 ve sonrasinda sistem foto ve video '
-            'icin ayri ayri izin ister.',
+        icon: Icons.no_photography_outlined,
+        tone: EmptyStateTone.brand,
+        title: 'Medya erisimi yok',
+        message: 'Foto ve video erisimi gerekli. Medyani gozden gecirip '
+            'temizleyebilmek icin galeri erisimi vermen gerekiyor. Android 13 '
+            've sonrasinda sistem foto ve video icin ayri ayri izin ister.',
         action: FilledButton.icon(
           onPressed: () => ref.invalidate(mediaAccessProvider),
           icon: const Icon(Icons.lock_open),
@@ -83,6 +87,7 @@ class _MediaError extends StatelessWidget {
   Widget build(BuildContext context) {
     return EmptyState(
       icon: Icons.error_outline,
+      tone: EmptyStateTone.error,
       title: 'Bir sorun olustu',
       message: message,
     );
@@ -172,12 +177,19 @@ class _IndexProgress extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          LinearProgressIndicator(value: state.total == 0 ? null : state.progress),
+          Text('Medya taraniyor', style: theme.textTheme.titleMedium),
           AppSpacing.gapLg,
+          ClipRRect(
+            borderRadius: BorderRadius.circular(AppRadii.pill),
+            child: LinearProgressIndicator(
+                value: state.total == 0 ? null : state.progress, minHeight: 6),
+          ),
+          AppSpacing.gapMd,
           Text(
-            'Taraniyor... ${state.processed}/${state.total}',
-            style: theme.textTheme.bodyMedium
-                ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+            '${state.processed} / ${state.total}',
+            style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+                fontFeatures: kTabularFigures),
           ),
         ],
       ),
@@ -194,7 +206,8 @@ class _IndexError extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return EmptyState(
       icon: Icons.error_outline,
-      title: 'Tarama basarisiz',
+      tone: EmptyStateTone.error,
+      title: 'Bir sorun olustu',
       message: message,
       action: FilledButton.icon(
         onPressed: () => ref.read(mediaIndexControllerProvider.notifier).run(),
@@ -213,7 +226,8 @@ class _DeckEmpty extends ConsumerWidget {
     final isRandom = ref.watch(mediaSortProvider) == MediaSortOrder.random;
     return EmptyState(
       icon: Icons.check_circle_outline,
-      title: 'Hepsi incelendi',
+      tone: EmptyStateTone.brand,
+      title: 'Tumu incelendi',
       message: 'Bu filtreyle gozden gecirilecek medya kalmadi.',
       action: Wrap(
         spacing: AppSpacing.sm,
@@ -256,11 +270,16 @@ class _DeckContent extends ConsumerWidget {
 
     return Column(
       children: [
+        const Padding(
+          padding: EdgeInsets.fromLTRB(
+              AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, 0),
+          child: _DeckTypeFilter(),
+        ),
         if (stats != null)
           Padding(
             padding: const EdgeInsets.fromLTRB(
-                AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, 0),
-            child: MediaStatsPanel(stats: stats, dense: true),
+                AppSpacing.lg, AppSpacing.md, AppSpacing.lg, 0),
+            child: _FreedSpaceMeter(stats: stats),
           ),
         Expanded(
           child: Padding(
@@ -326,6 +345,82 @@ class _DeckContent extends ConsumerWidget {
   }
 }
 
+// Segmented type filter above the deck (Tumu / Fotograflar / Videolar).
+class _DeckTypeFilter extends ConsumerWidget {
+  const _DeckTypeFilter();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final value = ref.watch(mediaTypeFilterProvider);
+    return SizedBox(
+      width: double.infinity,
+      child: SegmentedButton<MediaTypeFilter>(
+        showSelectedIcon: false,
+        segments: const [
+          ButtonSegment(value: MediaTypeFilter.all, label: Text('Tumu')),
+          ButtonSegment(
+              value: MediaTypeFilter.photos, label: Text('Fotograflar')),
+          ButtonSegment(
+              value: MediaTypeFilter.videos, label: Text('Videolar')),
+        ],
+        selected: {value},
+        onSelectionChanged: (s) =>
+            ref.read(mediaTypeFilterProvider.notifier).state = s.first,
+      ),
+    );
+  }
+}
+
+// Progress meter: "Ilerleme NNN / NNN" + freed-space estimate + thin bar.
+// The estimate sums the byte sizes of assets currently queued for deletion.
+class _FreedSpaceMeter extends ConsumerWidget {
+  const _FreedSpaceMeter({required this.stats});
+
+  final MediaStats stats;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final pending = ref.watch(mediaPendingDeletesProvider).valueOrNull;
+    final freed = (pending ?? const <MediaAsset>[])
+        .fold<int>(0, (sum, a) => sum + a.sizeBytes);
+    final figures = theme.textTheme.bodyMedium
+        ?.copyWith(fontFeatures: kTabularFigures);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text('Ilerleme ', style: theme.textTheme.bodyMedium),
+            Text('${stats.decided} / ${stats.total}', style: figures),
+            const Spacer(),
+            Flexible(
+              child: Text('Bosaltilacak (tahmini) ',
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodySmall
+                      ?.copyWith(color: scheme.onSurfaceVariant)),
+            ),
+            Text('~${formatBytes(freed)}',
+                style: figures?.copyWith(
+                    color: context.money.income,
+                    fontWeight: FontWeight.w600)),
+          ],
+        ),
+        AppSpacing.gapSm,
+        ClipRRect(
+          borderRadius: BorderRadius.circular(AppRadii.pill),
+          child: LinearProgressIndicator(
+            value: stats.progress,
+            minHeight: 5,
+            backgroundColor: scheme.surfaceContainerHighest,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class _ActionBar extends StatelessWidget {
   const _ActionBar({required this.controller});
 
@@ -345,31 +440,36 @@ class _ActionBar extends StatelessWidget {
             _ActionButton(
               icon: Icons.delete_outline,
               label: 'Sil',
-              color: scheme.error,
+              foreground: scheme.onErrorContainer,
+              background: scheme.errorContainer,
               onPressed: () => controller.swipe(CardSwiperDirection.left),
             ),
             _ActionButton(
               icon: Icons.schedule,
               label: 'Sonra',
-              color: scheme.tertiary,
+              foreground: scheme.tertiary,
+              background: scheme.tertiaryContainer,
               onPressed: () => controller.swipe(CardSwiperDirection.bottom),
             ),
             _ActionButton(
               icon: Icons.star_outline,
               label: 'Favori',
-              color: scheme.secondary,
+              foreground: scheme.onSecondaryContainer,
+              background: scheme.secondaryContainer,
               onPressed: () => controller.swipe(CardSwiperDirection.top),
             ),
             _ActionButton(
               icon: Icons.check,
               label: 'Tut',
-              color: scheme.primary,
+              foreground: scheme.onPrimaryContainer,
+              background: scheme.primaryContainer,
               onPressed: () => controller.swipe(CardSwiperDirection.right),
             ),
             _ActionButton(
               icon: Icons.undo,
               label: 'Geri al',
-              color: scheme.onSurfaceVariant,
+              foreground: scheme.onSurfaceVariant,
+              background: scheme.surfaceContainerHighest,
               onPressed: controller.undo,
             ),
           ],
@@ -379,17 +479,20 @@ class _ActionBar extends StatelessWidget {
   }
 }
 
+// Circular tonal action button with a label below. 56px target (>=48 min).
 class _ActionButton extends StatelessWidget {
   const _ActionButton({
     required this.icon,
     required this.label,
-    required this.color,
+    required this.foreground,
+    required this.background,
     required this.onPressed,
   });
 
   final IconData icon;
   final String label;
-  final Color color;
+  final Color foreground;
+  final Color background;
   final VoidCallback onPressed;
 
   @override
@@ -398,9 +501,18 @@ class _ActionButton extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        IconButton.filledTonal(
-          onPressed: onPressed,
-          icon: Icon(icon, color: color),
+        SizedBox(
+          width: 56,
+          height: 56,
+          child: Material(
+            color: background,
+            shape: const CircleBorder(),
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              onTap: onPressed,
+              child: Icon(icon, color: foreground),
+            ),
+          ),
         ),
         const SizedBox(height: AppSpacing.xs),
         Text(label,
@@ -411,41 +523,245 @@ class _ActionButton extends StatelessWidget {
   }
 }
 
-// --- Web stats-only view --------------------------------------------------
+// --- Web / desktop companion dashboard ------------------------------------
 
+// Read-only companion: a browser cannot read device media, so this is a brand
+// dashboard (hero + aggregate stats + per-device history), not the swipe tool.
 class _MediaWebView extends ConsumerWidget {
   const _MediaWebView();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
     final stats = ref.watch(mediaStatsProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('Medya')),
+      appBar: AppBar(title: const Text('Medya Temizligi')),
       body: stats.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => _MediaError(message: e.toString()),
-        data: (list) {
-          if (list.isEmpty) {
-            return const _WebEmpty();
-          }
-          return ListView(
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            children: [
-              Text(
-                'Bu cihazda medya temizligi yok; istatistikler asagida. '
-                'Yakalama ve temizlik telefonda calisir.',
-                style: theme.textTheme.bodySmall
-                    ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-              ),
-              AppSpacing.gapLg,
-              for (final s in list) ...[
-                MediaStatsPanel(stats: s),
-                AppSpacing.gapMd,
+        data: (list) => list.isEmpty ? const _WebEmpty() : _WebDashboard(list),
+      ),
+    );
+  }
+}
+
+class _WebDashboard extends StatelessWidget {
+  const _WebDashboard(this.list);
+
+  final List<MediaStats> list;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final agg = _WebAggregate.of(list);
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: kContentMaxWidth),
+        child: ListView(
+          padding: const EdgeInsets.all(AppSpacing.xxl),
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.cloud_done_outlined, size: 18),
+                const SizedBox(width: AppSpacing.sm),
+                Text('Senklendi',
+                    style: theme.textTheme.bodySmall
+                        ?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
               ],
+            ),
+            AppSpacing.gapMd,
+            const _CompanionHero(),
+            AppSpacing.gapXl,
+            _WebStatRow(agg: agg),
+            AppSpacing.gapXl,
+            Text('Son oturumlar', style: theme.textTheme.titleMedium),
+            AppSpacing.gapMd,
+            for (final s in list) ...[
+              MediaStatsPanel(stats: s),
+              AppSpacing.gapMd,
             ],
-          );
-        },
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Sums per-device counters into a single set of dashboard figures. There is no
+// freed-bytes field on MediaStats, so only counts are aggregated here.
+class _WebAggregate {
+  const _WebAggregate(
+      {required this.reviewed, required this.kept, required this.deleted});
+
+  final int reviewed;
+  final int kept;
+  final int deleted;
+
+  static _WebAggregate of(List<MediaStats> list) {
+    var reviewed = 0, kept = 0, deleted = 0;
+    for (final s in list) {
+      reviewed += s.decided;
+      kept += s.kept;
+      deleted += s.deleted;
+    }
+    return _WebAggregate(reviewed: reviewed, kept: kept, deleted: deleted);
+  }
+}
+
+class _CompanionHero extends StatelessWidget {
+  const _CompanionHero();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.xxl),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(AppRadii.sheet),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [scheme.primary, scheme.tertiary],
+        ),
+      ),
+      child: context.isWide
+          ? Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: const [
+                Expanded(child: _HeroText()),
+                SizedBox(width: AppSpacing.xxl),
+                _QrPlaceholder(),
+              ],
+            )
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: const [
+                _HeroText(),
+                SizedBox(height: AppSpacing.xl),
+                _QrPlaceholder(),
+              ],
+            ),
+    );
+  }
+}
+
+class _HeroText extends StatelessWidget {
+  const _HeroText();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final onHero = theme.colorScheme.onPrimary;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text('COMPANION',
+            style: theme.textTheme.labelMedium
+                ?.copyWith(color: onHero, letterSpacing: 2)),
+        AppSpacing.gapSm,
+        Text('Medya temizligi telefonda calisir',
+            style: theme.textTheme.headlineMedium?.copyWith(color: onHero)),
+        AppSpacing.gapMd,
+        Text(
+          'Tarayicilar cihaz medyasina erisemez. Telefonunda temizligi yap; '
+          'ilerleme ve istatistikler burada gorunur.',
+          style: theme.textTheme.bodyMedium
+              ?.copyWith(color: onHero.withValues(alpha: 0.9)),
+        ),
+        AppSpacing.gapLg,
+        FilledButton.icon(
+          style: FilledButton.styleFrom(
+            backgroundColor: theme.colorScheme.surface,
+            foregroundColor: theme.colorScheme.primary,
+          ),
+          onPressed: () => AppFeedback.success(
+              context, 'Telefonunda PersonalHub uygulamasini ac'),
+          icon: const Icon(Icons.phone_iphone),
+          label: const Text('Telefonda ac'),
+        ),
+      ],
+    );
+  }
+}
+
+// Visual-only QR stand-in (no QR dependency added).
+class _QrPlaceholder extends StatelessWidget {
+  const _QrPlaceholder();
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      width: 132,
+      height: 132,
+      decoration: BoxDecoration(
+        color: scheme.surface,
+        borderRadius: BorderRadius.circular(AppRadii.card),
+      ),
+      alignment: Alignment.center,
+      child: Icon(Icons.qr_code_2, size: 88, color: scheme.onSurfaceVariant),
+    );
+  }
+}
+
+class _WebStatRow extends StatelessWidget {
+  const _WebStatRow({required this.agg});
+
+  final _WebAggregate agg;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    // No freed-bytes field on MediaStats -> the "Bosaltilan alan" card is
+    // omitted and only real counts are shown.
+    return Wrap(
+      spacing: AppSpacing.lg,
+      runSpacing: AppSpacing.lg,
+      children: [
+        _WebStatCard(
+            label: 'Incelenen dosya',
+            value: agg.reviewed,
+            color: scheme.onSurface),
+        _WebStatCard(
+            label: 'Saklanan',
+            value: agg.kept,
+            color: context.money.income),
+        _WebStatCard(label: 'Silinen', value: agg.deleted, color: scheme.error),
+      ],
+    );
+  }
+}
+
+class _WebStatCard extends StatelessWidget {
+  const _WebStatCard(
+      {required this.label, required this.value, required this.color});
+
+  final String label;
+  final int value;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      width: 220,
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(AppRadii.card),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label,
+              style: theme.textTheme.bodySmall
+                  ?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+          AppSpacing.gapSm,
+          Text('$value',
+              style: theme.textTheme.headlineMedium
+                  ?.copyWith(color: color, fontFeatures: kTabularFigures)),
+        ],
       ),
     );
   }
@@ -459,9 +775,11 @@ class _WebEmpty extends StatelessWidget {
     return ListView(
       children: const [
         EmptyState(
-          icon: Icons.insights_outlined,
+          icon: Icons.cloud_sync_outlined,
+          tone: EmptyStateTone.brand,
           title: 'Henuz istatistik yok',
-          message: 'Medya temizligi telefonda calisir. Ilerleme burada gorunur.',
+          message: 'Medya temizligi telefonda calisir. Telefonda ilk '
+              'temizligi yaptiginizda ilerleme burada gorunur.',
         ),
       ],
     );

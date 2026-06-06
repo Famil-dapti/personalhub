@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/app_spacing.dart';
 import '../../data/models/media_models.dart';
 
@@ -21,7 +22,8 @@ class MediaStatsPanel extends StatelessWidget {
         ? stats.deviceName!
         : 'Bu cihaz';
     return Card(
-      color: scheme.surfaceContainerHigh,
+      color: scheme.surfaceContainerLow,
+      elevation: AppElevation.elev1,
       margin: EdgeInsets.zero,
       child: Padding(
         padding: EdgeInsets.all(dense ? AppSpacing.md : AppSpacing.lg),
@@ -38,13 +40,14 @@ class MediaStatsPanel extends StatelessWidget {
                       style: theme.textTheme.titleSmall),
                 ),
                 Text('${stats.decided}/${stats.total} karar verildi',
-                    style: theme.textTheme.bodySmall
-                        ?.copyWith(color: scheme.onSurfaceVariant)),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                        color: scheme.onSurfaceVariant,
+                        fontFeatures: kTabularFigures)),
               ],
             ),
             AppSpacing.gapSm,
             ClipRRect(
-              borderRadius: BorderRadius.circular(AppSpacing.xs),
+              borderRadius: BorderRadius.circular(AppRadii.pill),
               child: LinearProgressIndicator(
                 value: stats.progress,
                 minHeight: 6,
@@ -59,7 +62,7 @@ class MediaStatsPanel extends StatelessWidget {
                 _StatChip(
                     label: 'Tutulan',
                     value: stats.kept,
-                    color: scheme.primary),
+                    color: context.money.income),
                 _StatChip(
                     label: 'Silinen',
                     value: stats.deleted,
@@ -93,10 +96,11 @@ class _StatChip extends StatelessWidget {
           horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(AppSpacing.sm),
+        borderRadius: BorderRadius.circular(AppRadii.chip),
       ),
       child: Text('$label $value',
-          style: theme.textTheme.labelMedium?.copyWith(color: color)),
+          style: theme.textTheme.labelMedium
+              ?.copyWith(color: color, fontFeatures: kTabularFigures)),
     );
   }
 }

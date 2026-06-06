@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/app_spacing.dart';
 import '../../data/models/notification_model.dart';
@@ -37,7 +38,7 @@ class RawPayloadBlock extends StatelessWidget {
           padding: const EdgeInsets.all(AppSpacing.md),
           decoration: BoxDecoration(
             color: scheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(AppSpacing.sm),
+            borderRadius: AppRadii.fieldR,
           ),
           child: SelectableText(
             [lines.join('\n'), ?pretty].join('\n\n'),

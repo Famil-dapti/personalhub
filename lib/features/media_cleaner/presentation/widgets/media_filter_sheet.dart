@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/app_spacing.dart';
 import '../../data/models/media_models.dart';
 import '../providers/media_providers.dart';
@@ -123,7 +124,9 @@ class _AlbumDropdown extends ConsumerWidget {
     return DropdownButtonFormField<String?>(
       initialValue: selected,
       isExpanded: true,
-      decoration: const InputDecoration(border: OutlineInputBorder()),
+      decoration: const InputDecoration(
+        border: OutlineInputBorder(borderRadius: AppRadii.fieldR),
+      ),
       items: [
         const DropdownMenuItem<String?>(value: null, child: Text('Tum albumler')),
         for (final a in albums)

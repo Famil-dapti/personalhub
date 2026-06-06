@@ -11,6 +11,9 @@ Wallet mini-app: income/expense tracking with categories (Phase 1.1, online-only
 - `WalletDashboardScreen` — pie + monthly trend charts (route `/wallet/dashboard`)
 - Providers: `transactionsProvider`, `categoriesProvider`, `walletSummaryProvider`
 
+Screens are responsive (`context.isWide`): desktop renders a two-column home with
+inline quick-add + search, centered forms, and side-by-side dashboard charts.
+
 ## Dependencies
 - Supabase (`transactions`, `categories` tables, RLS) via `supabaseClientProvider`
 - Riverpod (AsyncNotifier), fl_chart, intl

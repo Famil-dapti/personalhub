@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/app_feedback.dart';
 import '../../../../core/widgets/app_spacing.dart';
 import '../../../../core/widgets/empty_state.dart';
+import '../../../../core/widgets/responsive.dart';
 import '../../../../core/widgets/skeleton.dart';
 import '../../data/models/category_model.dart';
 import '../providers/category_provider.dart';
@@ -24,6 +26,7 @@ class ManageCategoriesScreen extends ConsumerWidget {
           icon: Icons.cloud_off_outlined,
           title: 'Bir sorun olustu',
           message: e.toString(),
+          tone: EmptyStateTone.error,
         ),
         data: (items) {
           final expenses =
@@ -32,9 +35,9 @@ class ManageCategoriesScreen extends ConsumerWidget {
               items.where((c) => c.kind == CategoryKind.income).toList();
           return ListView(
             children: [
-              _SectionHeader(title: 'Gider Kategorileri'),
+              const _SectionHeader(title: 'Gider Kategorileri'),
               ..._sectionRows(expenses),
-              _SectionHeader(title: 'Gelir Kategorileri'),
+              const _SectionHeader(title: 'Gelir Kategorileri'),
               ..._sectionRows(incomes),
               AppSpacing.fabClearance,
             ],
@@ -42,7 +45,7 @@ class ManageCategoriesScreen extends ConsumerWidget {
         },
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _openAddSheet(context, ref),
+        onPressed: () => _openAdd(context),
         icon: const Icon(Icons.add),
         label: const Text('Kategori Ekle'),
       ),
@@ -53,7 +56,8 @@ class ManageCategoriesScreen extends ConsumerWidget {
     if (items.isEmpty) {
       return const [
         Padding(
-          padding: EdgeInsets.fromLTRB(AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.sm),
+          padding:
+              EdgeInsets.fromLTRB(AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.sm),
           child: Text('Henuz kategori yok'),
         ),
       ];
@@ -61,12 +65,36 @@ class ManageCategoriesScreen extends ConsumerWidget {
     return items.map((c) => _CategoryRow(category: c)).toList();
   }
 
-  Future<void> _openAddSheet(BuildContext context, WidgetRef ref) async {
+  // Desktop presents the add form as a Dialog; phone as a bottom sheet.
+  Future<void> _openAdd(BuildContext context) async {
+    if (context.isWide) {
+      await showDialog<void>(
+        context: context,
+        builder: (_) => Dialog(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 440),
+            child: const Padding(
+              padding: EdgeInsets.all(AppSpacing.xxl),
+              child: AddCategoryForm(),
+            ),
+          ),
+        ),
+      );
+      return;
+    }
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
-      builder: (_) => const _AddCategorySheet(),
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.fromLTRB(
+          AppSpacing.lg,
+          0,
+          AppSpacing.lg,
+          MediaQuery.of(ctx).viewInsets.bottom + AppSpacing.lg,
+        ),
+        child: const AddCategoryForm(),
+      ),
     );
   }
 }
@@ -81,7 +109,8 @@ class _CategoriesLoading extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.xl, AppSpacing.lg, AppSpacing.sm),
+            padding: EdgeInsets.fromLTRB(
+                AppSpacing.lg, AppSpacing.xl, AppSpacing.lg, AppSpacing.sm),
             child: SkeletonBox(width: 160, height: 14),
           ),
           SkeletonListTile(),
@@ -106,7 +135,7 @@ class _SectionHeader extends StatelessWidget {
           AppSpacing.lg, AppSpacing.xl, AppSpacing.lg, AppSpacing.sm),
       child: Text(
         title,
-        style: theme.textTheme.titleSmall
+        style: theme.textTheme.labelLarge
             ?.copyWith(color: theme.colorScheme.primary),
       ),
     );
@@ -123,12 +152,9 @@ class _CategoryRow extends ConsumerWidget {
     final theme = Theme.of(context);
     final color = categoryColor(category, theme.colorScheme.primary);
     return ListTile(
-      leading: CircleAvatar(
-        backgroundColor: color.withValues(alpha: 0.15),
-        child: Icon(categoryIcon(category), color: color),
-      ),
-      title: Text(category.name),
-      subtitle: category.isSystem ? const Text('Hazir kategori') : null,
+      leading: _Avatar(category: category, color: color),
+      title: Text(category.name, style: theme.textTheme.titleSmall),
+      subtitle: category.isSystem ? const _PresetTag() : null,
       trailing: category.isSystem
           ? null
           : IconButton(
@@ -170,14 +196,62 @@ class _CategoryRow extends ConsumerWidget {
   }
 }
 
-class _AddCategorySheet extends ConsumerStatefulWidget {
-  const _AddCategorySheet();
+class _Avatar extends StatelessWidget {
+  const _Avatar({required this.category, required this.color});
+
+  final Category category;
+  final Color color;
 
   @override
-  ConsumerState<_AddCategorySheet> createState() => _AddCategorySheetState();
+  Widget build(BuildContext context) {
+    return Container(
+      width: 44,
+      height: 44,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.13),
+        shape: BoxShape.circle,
+      ),
+      child: Icon(categoryIcon(category), color: color, size: 22),
+    );
+  }
 }
 
-class _AddCategorySheetState extends ConsumerState<_AddCategorySheet> {
+class _PresetTag extends StatelessWidget {
+  const _PresetTag();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Container(
+        margin: const EdgeInsets.only(top: 2),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surfaceContainerHighest,
+          borderRadius: AppRadii.pillR,
+        ),
+        child: Text(
+          'Hazir kategori',
+          style: theme.textTheme.labelMedium
+              ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+        ),
+      ),
+    );
+  }
+}
+
+/// Shared add-category form. Hosted either in a bottom sheet (phone) or a
+/// dialog (desktop); the inner controls are identical in both.
+class AddCategoryForm extends ConsumerStatefulWidget {
+  const AddCategoryForm({super.key});
+
+  @override
+  ConsumerState<AddCategoryForm> createState() => _AddCategoryFormState();
+}
+
+class _AddCategoryFormState extends ConsumerState<AddCategoryForm> {
   static const List<String> _palette = [
     '#FF7043', '#42A5F5', '#66BB6A', '#AB47BC',
     '#EF5350', '#26A69A', '#FFCA28', '#5C6BC0',
@@ -215,81 +289,61 @@ class _AddCategorySheetState extends ConsumerState<_AddCategorySheet> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
-    return Padding(
-      padding: EdgeInsets.fromLTRB(
-          AppSpacing.lg, 0, AppSpacing.lg, bottomInset + AppSpacing.lg),
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Yeni Kategori', style: theme.textTheme.titleLarge),
-            AppSpacing.gapLg,
-            Center(child: _CategoryPreview(category: _draft)),
-            AppSpacing.gapLg,
-            SegmentedButton<CategoryKind>(
-              segments: const [
-                ButtonSegment(value: CategoryKind.expense, label: Text('Gider')),
-                ButtonSegment(value: CategoryKind.income, label: Text('Gelir')),
-              ],
-              selected: {_kind},
-              onSelectionChanged: (s) => setState(() => _kind = s.first),
-            ),
-            AppSpacing.gapLg,
-            TextField(
-              controller: _nameController,
-              textCapitalization: TextCapitalization.sentences,
-              decoration: const InputDecoration(
-                labelText: 'Kategori adi',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            AppSpacing.gapLg,
-            Text('Ikon', style: theme.textTheme.labelLarge),
-            AppSpacing.gapSm,
-            Wrap(
-              spacing: AppSpacing.sm,
-              children: selectableIconNames.map((name) {
-                final selected = name == _icon;
-                return ChoiceChip(
-                  selected: selected,
-                  label: Icon(iconForName(name), size: 20),
-                  onSelected: (_) => setState(() => _icon = name),
-                );
-              }).toList(),
-            ),
-            AppSpacing.gapLg,
-            Text('Renk', style: theme.textTheme.labelLarge),
-            AppSpacing.gapSm,
-            Wrap(
-              spacing: AppSpacing.sm,
-              children: _palette.map((hex) {
-                final selected = hex == _color;
-                final color = categoryColor(
-                  Category(
-                      id: '', userId: '', name: '', kind: _kind, color: hex),
-                  theme.colorScheme.primary,
-                );
-                return GestureDetector(
-                  onTap: () => setState(() => _color = hex),
-                  child: CircleAvatar(
-                    backgroundColor: color,
-                    child: selected
-                        ? const Icon(Icons.check, color: Colors.white, size: 18)
-                        : null,
-                  ),
-                );
-              }).toList(),
-            ),
-            if (_error != null) ...[
-              AppSpacing.gapMd,
-              Text('Hata: $_error',
-                  style: TextStyle(color: theme.colorScheme.error)),
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Yeni Kategori', style: theme.textTheme.titleLarge),
+          AppSpacing.gapLg,
+          Center(child: _CategoryPreview(category: _draft)),
+          AppSpacing.gapLg,
+          SegmentedButton<CategoryKind>(
+            segments: const [
+              ButtonSegment(value: CategoryKind.expense, label: Text('Gider')),
+              ButtonSegment(value: CategoryKind.income, label: Text('Gelir')),
             ],
-            AppSpacing.gapXl,
-            FilledButton.icon(
+            selected: {_kind},
+            onSelectionChanged: (s) => setState(() => _kind = s.first),
+          ),
+          AppSpacing.gapLg,
+          TextField(
+            controller: _nameController,
+            textCapitalization: TextCapitalization.sentences,
+            decoration: const InputDecoration(labelText: 'Kategori adi'),
+          ),
+          AppSpacing.gapLg,
+          Text('Ikon', style: theme.textTheme.labelLarge),
+          AppSpacing.gapSm,
+          Wrap(
+            spacing: AppSpacing.sm,
+            runSpacing: AppSpacing.sm,
+            children: selectableIconNames.map((name) {
+              return ChoiceChip(
+                selected: name == _icon,
+                label: Icon(iconForName(name), size: 20),
+                onSelected: (_) => setState(() => _icon = name),
+              );
+            }).toList(),
+          ),
+          AppSpacing.gapLg,
+          Text('Renk', style: theme.textTheme.labelLarge),
+          AppSpacing.gapSm,
+          _ColorPicker(
+            palette: _palette,
+            selected: _color,
+            onSelected: (hex) => setState(() => _color = hex),
+          ),
+          if (_error != null) ...[
+            AppSpacing.gapMd,
+            Text('Hata: $_error',
+                style: TextStyle(color: theme.colorScheme.error)),
+          ],
+          AppSpacing.gapXl,
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
               onPressed: _saving ? null : _submit,
               icon: _saving
                   ? const SizedBox(
@@ -300,8 +354,8 @@ class _AddCategorySheetState extends ConsumerState<_AddCategorySheet> {
                   : const Icon(Icons.check),
               label: const Text('Kaydet'),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -318,8 +372,7 @@ class _AddCategorySheetState extends ConsumerState<_AddCategorySheet> {
       _error = null;
     });
 
-    final error =
-        await ref.read(categoriesControllerProvider).add(_draft);
+    final error = await ref.read(categoriesControllerProvider).add(_draft);
 
     if (!mounted) return;
     if (error != null) {
@@ -331,6 +384,52 @@ class _AddCategorySheetState extends ConsumerState<_AddCategorySheet> {
     }
     AppFeedback.success(context, 'Kategori eklendi');
     Navigator.of(context).pop();
+  }
+}
+
+class _ColorPicker extends StatelessWidget {
+  const _ColorPicker({
+    required this.palette,
+    required this.selected,
+    required this.onSelected,
+  });
+
+  final List<String> palette;
+  final String selected;
+  final ValueChanged<String> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: AppSpacing.md,
+      runSpacing: AppSpacing.md,
+      children: palette.map((hex) {
+        final isSelected = hex == selected;
+        final color = categoryColor(
+          Category(id: '', userId: '', name: '', kind: CategoryKind.expense,
+              color: hex),
+          Theme.of(context).colorScheme.primary,
+        );
+        return GestureDetector(
+          onTap: () => onSelected(hex),
+          child: Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: color,
+              shape: BoxShape.circle,
+              border: isSelected
+                  ? Border.all(
+                      color: Theme.of(context).colorScheme.onSurface, width: 2)
+                  : null,
+            ),
+            child: isSelected
+                ? const Icon(Icons.check, color: Colors.white, size: 20)
+                : null,
+          ),
+        );
+      }).toList(),
+    );
   }
 }
 

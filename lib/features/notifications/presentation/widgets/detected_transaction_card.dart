@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/app_spacing.dart';
 import '../../domain/parsed_transaction.dart';
 
@@ -30,7 +31,7 @@ class DetectedTransactionCard extends StatelessWidget {
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         color: scheme.primaryContainer,
-        borderRadius: BorderRadius.circular(AppSpacing.md),
+        borderRadius: AppRadii.cardR,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -51,8 +52,10 @@ class DetectedTransactionCard extends StatelessWidget {
             Text(
               '${p.direction == TxnDirection.income ? 'Gelir' : 'Gider'}: '
               '${p.amountMagnitude.toStringAsFixed(2)} ${p.currency}',
-              style: theme.textTheme.titleMedium
-                  ?.copyWith(color: scheme.onPrimaryContainer),
+              style: theme.textTheme.titleMedium?.copyWith(
+                color: scheme.onPrimaryContainer,
+                fontFeatures: kTabularFigures,
+              ),
             )
           else
             Text(
