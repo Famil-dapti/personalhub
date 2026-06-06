@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/app_feedback.dart';
 import '../../../../core/widgets/app_spacing.dart';
 import '../../../../core/widgets/empty_state.dart';
@@ -29,7 +30,7 @@ class _MediaDeleteConfirmScreenState
   Widget build(BuildContext context) {
     final pending = ref.watch(mediaPendingDeletesProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('Silinecekler')),
+      appBar: AppBar(title: const Text('Silme onayi')),
       body: pending.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => EmptyState(
@@ -47,10 +48,11 @@ class _MediaDeleteConfirmScreenState
     final freed = assets.fold<int>(0, (sum, a) => sum + a.sizeBytes);
     return Column(
       children: [
-        _Summary(count: assets.length, freed: freed),
+        _Warning(count: assets.length, freed: freed),
         Expanded(child: _ThumbGrid(assets: assets)),
         _DeleteBar(
           count: assets.length,
+          freed: freed,
           running: _running,
           onPressed: () => _confirmAndDelete(assets.length, freed),
         ),
@@ -63,8 +65,9 @@ class _MediaDeleteConfirmScreenState
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Silme onayi'),
-        content: Text('$count oge silinecek, ~${formatBytes(freed)} yer '
-            'bosalacak. Android sistem onayi da istenecek.'),
+        content: Text('$count dosya kalici olarak silinecek, '
+            '~${formatBytes(freed)} yer bosalacak. Android sistem onayi da '
+            'istenecek. Geri alinamaz.'),
         actions: [
           TextButton(
               onPressed: () => Navigator.of(ctx).pop(false),
@@ -96,13 +99,14 @@ class _MediaDeleteConfirmScreenState
       AppFeedback.error(context, 'Iptal edildi');
     } else {
       AppFeedback.success(context,
-          '${result.deletedCount} oge silindi, ${formatBytes(result.freedBytes)} bosaldi');
+          '${result.deletedCount} dosya silindi, ~${formatBytes(result.freedBytes)} bosaldi');
     }
   }
 }
 
-class _Summary extends StatelessWidget {
-  const _Summary({required this.count, required this.freed});
+// Danger banner (errorContainer): irreversible-delete warning.
+class _Warning extends StatelessWidget {
+  const _Warning({required this.count, required this.freed});
 
   final int count;
   final int freed;
@@ -110,19 +114,30 @@ class _Summary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.lg),
-      child: Row(
-        children: [
-          Icon(Icons.delete_sweep, color: theme.colorScheme.error),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Text(
-              '$count oge - tahmini ${formatBytes(freed)} bosalacak',
-              style: theme.textTheme.titleSmall,
-            ),
+      child: Card(
+        color: scheme.errorContainer,
+        elevation: AppElevation.elev0,
+        margin: EdgeInsets.zero,
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          child: Row(
+            children: [
+              Icon(Icons.warning_amber_rounded, color: scheme.onErrorContainer),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Text(
+                  '$count dosya kalici olarak silinecek '
+                  '(~${formatBytes(freed)}). Geri alinamaz.',
+                  style: theme.textTheme.bodyMedium
+                      ?.copyWith(color: scheme.onErrorContainer),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -153,30 +168,110 @@ class _Thumb extends ConsumerWidget {
 
   final MediaAsset asset;
 
+  // Reverting the delete decision drops the asset from the pending queue.
+  void _unmark(WidgetRef ref) =>
+      ref.read(mediaCleanerControllerProvider).undo(asset);
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(AppRadii.field),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          _ThumbImage(asset: asset),
+          Positioned(
+            top: 2,
+            right: 2,
+            child: _UnmarkButton(onTap: () => _unmark(ref)),
+          ),
+          if (asset.isVideo)
+            const Positioned(
+              top: 4,
+              left: 4,
+              child: Icon(Icons.videocam, size: 16, color: Colors.white),
+            ),
+          Positioned(
+            left: 4,
+            bottom: 4,
+            child: _SizeChip(label: formatBytes(asset.sizeBytes)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ThumbImage extends ConsumerWidget {
+  const _ThumbImage({required this.asset});
+
+  final MediaAsset asset;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final scheme = Theme.of(context).colorScheme;
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(AppSpacing.sm),
-      child: FutureBuilder<Uint8List?>(
-        future: ref.read(mediaScannerProvider).thumbnail(asset.assetId),
-        builder: (context, snapshot) {
-          final bytes = snapshot.data;
-          if (bytes == null) {
-            return Container(
-              color: scheme.surfaceContainerHighest,
-              alignment: Alignment.center,
-              child: snapshot.connectionState == ConnectionState.done
-                  ? Icon(Icons.broken_image_outlined, color: scheme.outline)
-                  : const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2)),
-            );
-          }
-          return Image.memory(bytes, fit: BoxFit.cover, gaplessPlayback: true);
-        },
+    return FutureBuilder<Uint8List?>(
+      future: ref.read(mediaScannerProvider).thumbnail(asset.assetId),
+      builder: (context, snapshot) {
+        final bytes = snapshot.data;
+        if (bytes == null) {
+          return Container(
+            color: scheme.surfaceContainerHighest,
+            alignment: Alignment.center,
+            child: snapshot.connectionState == ConnectionState.done
+                ? Icon(Icons.broken_image_outlined, color: scheme.outline)
+                : const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2)),
+          );
+        }
+        return Image.memory(bytes, fit: BoxFit.cover, gaplessPlayback: true);
+      },
+    );
+  }
+}
+
+class _UnmarkButton extends StatelessWidget {
+  const _UnmarkButton({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.black54,
+      shape: const CircleBorder(),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: const Padding(
+          padding: EdgeInsets.all(AppSpacing.xs),
+          child: Icon(Icons.close, size: 16, color: Colors.white),
+        ),
       ),
+    );
+  }
+}
+
+class _SizeChip extends StatelessWidget {
+  const _SizeChip({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs, vertical: 2),
+      decoration: BoxDecoration(
+        color: Colors.black54,
+        borderRadius: BorderRadius.circular(AppRadii.chip),
+      ),
+      child: Text(label,
+          style: const TextStyle(
+              color: Colors.white,
+              fontSize: 10,
+              fontFeatures: kTabularFigures)),
     );
   }
 }
@@ -184,16 +279,19 @@ class _Thumb extends ConsumerWidget {
 class _DeleteBar extends StatelessWidget {
   const _DeleteBar({
     required this.count,
+    required this.freed,
     required this.running,
     required this.onPressed,
   });
 
   final int count;
+  final int freed;
   final bool running;
   final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return SafeArea(
       top: false,
       child: Padding(
@@ -201,6 +299,10 @@ class _DeleteBar extends StatelessWidget {
         child: SizedBox(
           width: double.infinity,
           child: FilledButton.icon(
+            style: FilledButton.styleFrom(
+              backgroundColor: scheme.error,
+              foregroundColor: scheme.onError,
+            ),
             onPressed: running ? null : onPressed,
             icon: running
                 ? const SizedBox(
@@ -208,7 +310,9 @@ class _DeleteBar extends StatelessWidget {
                     height: 18,
                     child: CircularProgressIndicator(strokeWidth: 2))
                 : const Icon(Icons.delete_forever),
-            label: Text(running ? 'Siliniyor...' : 'Sec ve sil ($count)'),
+            label: Text(running
+                ? 'Siliniyor...'
+                : '$count dosyayi sil  .  ${formatBytes(freed)}'),
           ),
         ),
       ),

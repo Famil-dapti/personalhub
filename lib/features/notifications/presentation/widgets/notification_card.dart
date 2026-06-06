@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/app_spacing.dart';
 import '../../data/models/notification_model.dart';
@@ -32,13 +33,16 @@ class NotificationCard extends StatelessWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
 
-    return Material(
-      color: selected ? scheme.secondaryContainer : Colors.transparent,
+    return Card(
+      margin: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.lg, vertical: AppSpacing.xs),
+      color: selected ? scheme.secondaryContainer : null,
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.lg, vertical: AppSpacing.md),
+              horizontal: AppSpacing.md, vertical: AppSpacing.md),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -92,7 +96,22 @@ class NotificationCard extends StatelessWidget {
                       Row(
                         children: [
                           if (item.isTransaction) const TransactionBadge(),
-                          if (item.isTransaction && _deviceLabel != null)
+                          if (item.isTransaction)
+                            const SizedBox(width: AppSpacing.xs),
+                          if (item.isTransaction)
+                            TextButton(
+                              onPressed: onTap,
+                              style: TextButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: AppSpacing.sm),
+                                minimumSize: const Size(0, 32),
+                                tapTargetSize:
+                                    MaterialTapTargetSize.shrinkWrap,
+                                visualDensity: VisualDensity.compact,
+                              ),
+                              child: const Text('Islem olustur'),
+                            ),
+                          if ((item.isTransaction) && _deviceLabel != null)
                             const SizedBox(width: AppSpacing.sm),
                           if (_deviceLabel != null)
                             Flexible(
@@ -140,7 +159,7 @@ class TransactionBadge extends StatelessWidget {
           const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 2),
       decoration: BoxDecoration(
         color: scheme.primaryContainer,
-        borderRadius: BorderRadius.circular(AppSpacing.sm),
+        borderRadius: AppRadii.chipR,
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

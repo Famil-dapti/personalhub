@@ -1,6 +1,6 @@
 # ai-index.md — Codebase Map
 
-Last updated: 2026-06-06 (Phase 4 Notification->Wallet integration code-complete: hybrid regex+Groq parser, settings tab, schema v5, SMS auto-route drafts)
+Last updated: 2026-06-06 (Design system implemented: teal/green M3 tokens, responsive phone+desktop layouts across all 3 apps)
 
 ## Project Root
 
@@ -8,10 +8,12 @@ Last updated: 2026-06-06 (Phase 4 Notification->Wallet integration code-complete
 |---|---|
 | `lib/main.dart` | App entry point: Supabase.initialize, ProviderScope, MaterialApp.router |
 | `lib/core/config/app_config.dart` | Supabase URL + anon key (filled with real values) |
-| `lib/core/theme/app_theme.dart` | Material 3 light/dark themes, Google Fonts Inter |
+| `lib/core/theme/app_theme.dart` | Material 3 light/dark themes: explicit deep teal/green color schemes, Inter type roles (explicit sizing), component themes (appbar/card/nav/fab/chip/input/sheet/snackbar) |
+| `lib/core/theme/app_tokens.dart` | Design tokens: AppRadii, AppElevation, kTabularFigures, MoneyColors ThemeExtension (income/expense), `context.money` accessor |
 | `lib/core/router/app_router.dart` | go_router config: auth redirect guard, StatefulShellRoute for 4 tabs; `/wallet/add` reads a TransactionPrefill via `extra` |
 | `lib/core/supabase/supabase_service.dart` | supabaseClientProvider, authStateProvider, currentUserProvider |
-| `lib/core/widgets/app_shell.dart` | Bottom NavigationBar shell (4 tabs, Turkish labels: Cuzdan/Bildirimler/Medya/Ayarlar) wrapping StatefulNavigationShell |
+| `lib/core/widgets/app_shell.dart` | Adaptive shell: phone bottom NavigationBar; desktop (>=840) 88px NavigationRail + logout (4 tabs Cuzdan/Bildirimler/Medya/Ayarlar) wrapping StatefulNavigationShell |
+| `lib/core/widgets/responsive.dart` | kWideBreakpoint (840), kContentMaxWidth, `context.isWide` for phone-vs-desktop layout switching |
 | `lib/core/widgets/app_spacing.dart` | Spacing tokens (4..32) + reusable gap/FAB-clearance SizedBoxes |
 | `lib/core/widgets/app_feedback.dart` | Floating success/error snackbar helpers |
 | `lib/core/widgets/skeleton.dart` | Shimmer skeleton primitives (Skeleton, SkeletonBox, SkeletonListTile) |

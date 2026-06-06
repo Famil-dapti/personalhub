@@ -2,9 +2,11 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/app_spacing.dart';
 import '../../../../core/widgets/empty_state.dart';
+import '../../../../core/widgets/responsive.dart';
 import '../../../../core/widgets/skeleton.dart';
 import '../providers/dashboard_provider.dart';
 import '../providers/wallet_provider.dart';
@@ -33,25 +35,91 @@ class WalletDashboardScreen extends ConsumerWidget {
           icon: Icons.cloud_off_outlined,
           title: 'Bir sorun olustu',
           message: e.toString(),
+          tone: EmptyStateTone.error,
         ),
         data: (_) => !hasData
             ? const EmptyState(
                 icon: Icons.insights_outlined,
                 title: 'Henuz veri yok',
-                message: 'Islem ekledikce burada gider ve gelir grafiklerini gorursun.',
+                message:
+                    'Islem ekledikce burada gider ve gelir grafiklerini gorursun.',
               )
-            : ListView(
-                padding: const EdgeInsets.all(AppSpacing.lg),
-                children: [
-                  _SectionTitle('Bu Ay Gider Dagilimi'),
-                  _ExpensePie(slices: slices),
-                  AppSpacing.gapXxl,
-                  _SectionTitle('Son 6 Ay'),
-                  const _TrendLegend(),
-                  AppSpacing.gapMd,
-                  _MonthlyTrend(months: months),
-                ],
-              ),
+            : _DashboardBody(slices: slices, months: months),
+      ),
+    );
+  }
+}
+
+class _DashboardBody extends StatelessWidget {
+  const _DashboardBody({required this.slices, required this.months});
+
+  final List<CategorySlice> slices;
+  final List<MonthTotals> months;
+
+  @override
+  Widget build(BuildContext context) {
+    final donut = _ChartCard(
+      title: 'Bu Ay Gider Dagilimi',
+      child: _ExpensePie(slices: slices),
+    );
+    final bars = _ChartCard(
+      title: 'Son 6 Ay',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const _TrendLegend(),
+          AppSpacing.gapMd,
+          _MonthlyTrend(months: months),
+        ],
+      ),
+    );
+
+    if (context.isWide) {
+      return Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: kContentMaxWidth),
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.xxl),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(child: donut),
+                const SizedBox(width: AppSpacing.xxl),
+                Expanded(child: bars),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    return ListView(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      children: [donut, AppSpacing.gapLg, bars],
+    );
+  }
+}
+
+class _ChartCard extends StatelessWidget {
+  const _ChartCard({required this.title, required this.child});
+
+  final String title;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title, style: theme.textTheme.titleMedium),
+            AppSpacing.gapLg,
+            child,
+          ],
+        ),
       ),
     );
   }
@@ -89,7 +157,7 @@ class _TrendLegend extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     return Row(
       children: [
-        _LegendDot(color: Colors.green.shade500, label: 'Gelir'),
+        _LegendDot(color: context.money.income, label: 'Gelir'),
         const SizedBox(width: AppSpacing.lg),
         _LegendDot(color: scheme.error, label: 'Gider'),
       ],
@@ -120,21 +188,6 @@ class _LegendDot extends StatelessWidget {
   }
 }
 
-class _SectionTitle extends StatelessWidget {
-  const _SectionTitle(this.text);
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Text(text, style: theme.textTheme.titleMedium),
-    );
-  }
-}
-
 class _ExpensePie extends StatelessWidget {
   const _ExpensePie({required this.slices});
 
@@ -145,40 +198,77 @@ class _ExpensePie extends StatelessWidget {
     final theme = Theme.of(context);
     if (slices.isEmpty) {
       return const Padding(
-        padding: EdgeInsets.all(32),
+        padding: EdgeInsets.all(AppSpacing.xxl),
         child: Center(child: Text('Bu ay gider yok')),
       );
     }
     final total = slices.fold<double>(0, (sum, s) => sum + s.total);
+    final canvas = context.isWide ? 220.0 : 200.0;
 
     return Column(
       children: [
         SizedBox(
-          height: 200,
-          child: PieChart(
-            PieChartData(
-              sectionsSpace: 2,
-              centerSpaceRadius: 48,
-              sections: slices.map((s) {
-                final color = categoryColor(s.category, theme.colorScheme.primary);
-                final pct = total == 0 ? 0 : (s.total / total * 100);
-                return PieChartSectionData(
-                  value: s.total,
-                  color: color,
-                  title: '${pct.toStringAsFixed(0)}%',
-                  radius: 60,
-                  titleStyle: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
-                  ),
-                );
-              }).toList(),
-            ),
+          height: canvas,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              PieChart(
+                PieChartData(
+                  sectionsSpace: 2,
+                  centerSpaceRadius: canvas * 0.30,
+                  sections: _sections(theme, total),
+                ),
+              ),
+              _CenterTotal(total: total),
+            ],
           ),
         ),
-        const SizedBox(height: 16),
+        AppSpacing.gapLg,
         ...slices.map((s) => _LegendRow(slice: s)),
+      ],
+    );
+  }
+
+  List<PieChartSectionData> _sections(ThemeData theme, double total) {
+    return slices.map((s) {
+      final color = categoryColor(s.category, theme.colorScheme.primary);
+      final pct = total == 0 ? 0 : (s.total / total * 100);
+      return PieChartSectionData(
+        value: s.total,
+        color: color,
+        title: '${pct.toStringAsFixed(0)}%',
+        radius: 54,
+        titleStyle: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+          fontSize: 12,
+        ),
+      );
+    }).toList();
+  }
+}
+
+class _CenterTotal extends StatelessWidget {
+  const _CenterTotal({required this.total});
+
+  final double total;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          'Toplam',
+          style: theme.textTheme.bodySmall
+              ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+        ),
+        Text(
+          formatMoney(total),
+          style: theme.textTheme.titleSmall
+              ?.copyWith(fontFeatures: kTabularFigures),
+        ),
       ],
     );
   }
@@ -194,15 +284,24 @@ class _LegendRow extends StatelessWidget {
     final theme = Theme.of(context);
     final color = categoryColor(slice.category, theme.colorScheme.primary);
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
       child: Row(
         children: [
           CircleAvatar(radius: 6, backgroundColor: color),
-          const SizedBox(width: 12),
-          Expanded(child: Text(slice.category?.name ?? 'Kategorisiz')),
-          Text(formatMoney(slice.total),
-              style: theme.textTheme.bodyMedium
-                  ?.copyWith(fontWeight: FontWeight.w600)),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Text(
+              slice.category?.name ?? 'Kategorisiz',
+              style: theme.textTheme.bodyMedium,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          Text(
+            formatMoney(slice.total),
+            style: theme.textTheme.titleSmall
+                ?.copyWith(fontFeatures: kTabularFigures),
+          ),
         ],
       ),
     );
@@ -218,9 +317,10 @@ class _MonthlyTrend extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final maxY = _maxValue(months);
+    final height = context.isWide ? 300.0 : 220.0;
 
     return SizedBox(
-      height: 220,
+      height: height,
       child: BarChart(
         BarChartData(
           maxY: maxY,
@@ -242,34 +342,35 @@ class _MonthlyTrend extends StatelessWidget {
                   if (i < 0 || i >= months.length) return const SizedBox();
                   return Padding(
                     padding: const EdgeInsets.only(top: 6),
-                    child: Text(_monthLabels[months[i].month - 1],
-                        style: theme.textTheme.bodySmall),
+                    child: Text(
+                      _monthLabels[months[i].month - 1],
+                      style: theme.textTheme.bodySmall,
+                    ),
                   );
                 },
               ),
             ),
           ),
-          barGroups: [
-            for (var i = 0; i < months.length; i++)
-              BarChartGroupData(
-                x: i,
-                barRods: [
-                  BarChartRodData(
-                    toY: months[i].income,
-                    color: Colors.green.shade500,
-                    width: 7,
-                  ),
-                  BarChartRodData(
-                    toY: months[i].expense,
-                    color: theme.colorScheme.error,
-                    width: 7,
-                  ),
-                ],
-              ),
-          ],
+          barGroups: _barGroups(context),
         ),
       ),
     );
+  }
+
+  List<BarChartGroupData> _barGroups(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final income = context.money.income;
+    return [
+      for (var i = 0; i < months.length; i++)
+        BarChartGroupData(
+          x: i,
+          barRods: [
+            BarChartRodData(toY: months[i].income, color: income, width: 8),
+            BarChartRodData(
+                toY: months[i].expense, color: scheme.error, width: 8),
+          ],
+        ),
+    ];
   }
 
   double _maxValue(List<MonthTotals> months) {

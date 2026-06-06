@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/theme/app_tokens.dart';
 import '../providers/notifications_provider.dart';
 
 /// Pill search box bound to [notificationSearchProvider]. Filtering happens
@@ -39,6 +40,7 @@ class _NotificationSearchFieldState
         prefixIcon: const Icon(Icons.search),
         suffixIcon: hasText
             ? IconButton(
+                tooltip: 'Temizle',
                 icon: const Icon(Icons.close),
                 onPressed: () {
                   _controller.clear();
@@ -49,9 +51,17 @@ class _NotificationSearchFieldState
             : null,
         filled: true,
         fillColor: scheme.surfaceContainerHigh,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(28),
+        border: const OutlineInputBorder(
+          borderRadius: AppRadii.pillR,
           borderSide: BorderSide.none,
+        ),
+        enabledBorder: const OutlineInputBorder(
+          borderRadius: AppRadii.pillR,
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: AppRadii.pillR,
+          borderSide: BorderSide(color: scheme.primary, width: 2),
         ),
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 20, vertical: 12),

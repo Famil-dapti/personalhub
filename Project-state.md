@@ -1,6 +1,38 @@
 # Project-state.md
 
 ## Current Phase
+**Phase 5 — Design system implementation** ✅ **CODE COMPLETE (2026-06-06).** The Claude Design
+mockups in `docs/design/personalhub/` are now implemented across the whole app. `flutter analyze`
+clean, all unit tests pass, `flutter build web --release` OK.
+
+**What shipped:**
+- **New design tokens** (`docs/design/personalhub/specs/00 - Tokens.md`): seed changed from purple
+  `#6750A4` to an explicit deep **teal/green** Material 3 scheme (light + dark, all roles set
+  by hand, not `fromSeed`). Inter typography with explicit role sizing. New `core/theme/app_tokens.dart`
+  = `AppRadii`, `AppElevation`, `kTabularFigures`, and a `MoneyColors` ThemeExtension (income green /
+  expense = error) reachable via `context.money`. Component themes set centrally (appbar/card/nav/
+  fab/chip/input/sheet/snackbar) so screens rely on defaults.
+- **Responsive chrome**: new `core/widgets/responsive.dart` (`kWideBreakpoint` 840, `context.isWide`).
+  `AppShell` is now adaptive — phone bottom nav, desktop **88px NavigationRail** (secondaryContainer
+  pill) + logout.
+- **Shared components refined**: EmptyState (84px circular badge + tone neutral/error/brand),
+  Skeleton (real shimmer sweep gradient), AppFeedback (inverse-surface success / errorContainer error).
+- **Wallet**: gradient BalanceCard, restyled TransactionTile (tabular amounts, money colors),
+  add-transaction, categories (add via bottom sheet on phone / Dialog on desktop, shared
+  `AddCategoryForm`), dashboard (donut + 6-month bars). **Desktop two-column** home (380px BalanceCard
+  + Hizli Ekle quick-add | fluid Islemler list with `Islem ara` client-side filter); charts side-by-side.
+- **Notifications**: card/chip/search/detail restyle, permission + capture banner, shared breakpoint;
+  phone list+pushed-detail / desktop master-detail preserved.
+- **Media + Settings**: deck filter + freed-space meter, restyled MediaCard (SAKLA/SIL stamps),
+  circular action buttons, delete-confirm warning + grid, MediaStatsPanel; **web companion dashboard**
+  (COMPANION gradient hero + `Telefonda ac` + qr_code_2 placeholder + aggregate stat cards + per-device
+  panels). Settings restyled + 520px centered on desktop. (No freed-bytes field on MediaStats, so the
+  GB stat card + freed-space chart were intentionally omitted — no fabricated data.)
+
+Implemented in parallel by 3 sub-agents (one per feature), each restricted to its own feature dir;
+foundation (theme/tokens/shared/nav) done first so they could build on it. Logic/providers untouched.
+
+## Previous Phase
 **Phase 4 — Wallet + Notification Integration** ✅ **CODE COMPLETE (2026-06-06; on-device verify
 deferred).** Bank/payment notifications become editable wallet transactions. Drift schemaVersion is
 now **5**. See the Phase 4 section below for the full breakdown.

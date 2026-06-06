@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/app_spacing.dart';
 import '../providers/notifications_provider.dart';
 
@@ -11,12 +12,14 @@ class NotificationFilterChipRow extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final scheme = Theme.of(context).colorScheme;
     final selected = ref.watch(notificationFilterProvider);
     final apps = ref.watch(notificationAppsProvider);
 
     final chips = <_ChipSpec>[
       const _ChipSpec(kFilterAll, 'Tumu'),
-      const _ChipSpec(kFilterTransactions, 'Islemler'),
+      const _ChipSpec(kFilterTransactions, 'Islemler',
+          icon: Icons.payments_outlined),
       for (final app in apps) _ChipSpec(app, app),
     ];
 
@@ -29,10 +32,27 @@ class NotificationFilterChipRow extends ConsumerWidget {
         separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.sm),
         itemBuilder: (context, i) {
           final chip = chips[i];
+          final isSelected = selected == chip.value;
           return Center(
             child: ChoiceChip(
               label: Text(chip.label),
-              selected: selected == chip.value,
+              avatar: chip.icon == null
+                  ? null
+                  : Icon(
+                      chip.icon,
+                      size: 18,
+                      color: isSelected
+                          ? scheme.onPrimaryContainer
+                          : scheme.onSurfaceVariant,
+                    ),
+              selected: isSelected,
+              showCheckmark: false,
+              selectedColor: scheme.primaryContainer,
+              labelStyle: isSelected
+                  ? TextStyle(color: scheme.onPrimaryContainer)
+                  : null,
+              shape: const RoundedRectangleBorder(
+                  borderRadius: AppRadii.chipR),
               onSelected: (_) => ref
                   .read(notificationFilterProvider.notifier)
                   .state = chip.value,
@@ -45,7 +65,8 @@ class NotificationFilterChipRow extends ConsumerWidget {
 }
 
 class _ChipSpec {
-  const _ChipSpec(this.value, this.label);
+  const _ChipSpec(this.value, this.label, {this.icon});
   final String value;
   final String label;
+  final IconData? icon;
 }

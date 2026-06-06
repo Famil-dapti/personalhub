@@ -3,8 +3,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/app_feedback.dart';
+import '../../../../core/widgets/app_spacing.dart';
+import '../../../../core/widgets/responsive.dart';
 import '../../data/models/category_model.dart';
 import '../../data/models/transaction_model.dart';
 import '../models/transaction_prefill.dart';
@@ -62,81 +65,87 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
     final theme = Theme.of(context);
     final categories = ref.watch(categoriesProvider).valueOrNull ?? const [];
     final options = categories.where((c) => c.kind == _kind).toList();
+    // Selected segment tints the amount: expense red / income green.
+    final accent = _kind == CategoryKind.expense
+        ? theme.colorScheme.error
+        : context.money.income;
 
-    return Scaffold(
-      appBar: AppBar(title: Text(_appBarTitle)),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            SegmentedButton<CategoryKind>(
-              segments: const [
-                ButtonSegment(
-                  value: CategoryKind.expense,
-                  label: Text('Gider'),
-                  icon: Icon(Icons.arrow_upward),
-                ),
-                ButtonSegment(
-                  value: CategoryKind.income,
-                  label: Text('Gelir'),
-                  icon: Icon(Icons.arrow_downward),
-                ),
-              ],
-              selected: {_kind},
-              onSelectionChanged: (s) => setState(() {
-                _kind = s.first;
-                _categoryId = null; // reset: categories differ per kind
-              }),
-            ),
-            const SizedBox(height: 20),
-            TextFormField(
-              controller: _amountController,
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
-              inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
-              ],
-              decoration: const InputDecoration(
-                labelText: 'Tutar',
-                suffixText: 'AZN',
-                border: OutlineInputBorder(),
+    final form = Form(
+      key: _formKey,
+      child: ListView(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        children: [
+          SegmentedButton<CategoryKind>(
+            segments: const [
+              ButtonSegment(
+                value: CategoryKind.expense,
+                label: Text('Gider'),
+                icon: Icon(Icons.north_east),
               ),
-              validator: _validateAmount,
-            ),
-            const SizedBox(height: 20),
-            Text('Kategori', style: theme.textTheme.labelLarge),
-            const SizedBox(height: 8),
-            _CategoryPicker(
-              options: options,
-              selectedId: _categoryId,
-              onSelected: (id) => setState(() => _categoryId = id),
-            ),
-            const SizedBox(height: 20),
-            TextFormField(
-              controller: _descriptionController,
-              decoration: const InputDecoration(
-                labelText: 'Aciklama (istege bagli)',
-                border: OutlineInputBorder(),
+              ButtonSegment(
+                value: CategoryKind.income,
+                label: Text('Gelir'),
+                icon: Icon(Icons.south_west),
               ),
-              maxLines: 2,
-            ),
-            const SizedBox(height: 20),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.calendar_today),
-              title: const Text('Tarih'),
-              subtitle: Text(formatDate(_date)),
-              trailing: const Icon(Icons.edit),
-              onTap: _pickDate,
-            ),
-            if (_error != null) ...[
-              const SizedBox(height: 12),
-              Text('Hata: $_error',
-                  style: TextStyle(color: theme.colorScheme.error)),
             ],
-            const SizedBox(height: 24),
-            FilledButton.icon(
+            selected: {_kind},
+            onSelectionChanged: (s) => setState(() {
+              _kind = s.first;
+              _categoryId = null; // reset: categories differ per kind
+            }),
+          ),
+          AppSpacing.gapXl,
+          TextFormField(
+            controller: _amountController,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+            ],
+            style: theme.textTheme.headlineSmall?.copyWith(
+              color: accent,
+              fontFeatures: kTabularFigures,
+            ),
+            decoration: InputDecoration(
+              labelText: 'Tutar',
+              suffixText: 'AZN',
+              suffixStyle: theme.textTheme.titleMedium
+                  ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+            ),
+            validator: _validateAmount,
+          ),
+          AppSpacing.gapXl,
+          Text('Kategori', style: theme.textTheme.labelLarge),
+          AppSpacing.gapSm,
+          _CategoryPicker(
+            options: options,
+            selectedId: _categoryId,
+            onSelected: (id) => setState(() => _categoryId = id),
+          ),
+          AppSpacing.gapXl,
+          TextFormField(
+            controller: _descriptionController,
+            decoration:
+                const InputDecoration(labelText: 'Aciklama (istege bagli)'),
+            maxLines: 2,
+          ),
+          AppSpacing.gapXl,
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.calendar_today),
+            title: const Text('Tarih'),
+            subtitle: Text(formatDate(_date)),
+            trailing: const Icon(Icons.edit),
+            onTap: _pickDate,
+          ),
+          if (_error != null) ...[
+            AppSpacing.gapMd,
+            Text('Hata: $_error',
+                style: TextStyle(color: theme.colorScheme.error)),
+          ],
+          AppSpacing.gapXxl,
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
               onPressed: _saving ? null : _submit,
               icon: _saving
                   ? const SizedBox(
@@ -147,9 +156,22 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
                   : const Icon(Icons.check),
               label: const Text('Kaydet'),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
+    );
+
+    return Scaffold(
+      appBar: AppBar(title: Text(_appBarTitle)),
+      // Constrain the form on desktop so it is not full-bleed.
+      body: context.isWide
+          ? Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 520),
+                child: form,
+              ),
+            )
+          : form,
     );
   }
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/app_spacing.dart';
 
 /// First-run / access-not-granted screen for the Android notification listener.
@@ -30,7 +31,7 @@ class PermissionScreen extends StatelessWidget {
               height: 96,
               decoration: BoxDecoration(
                 color: scheme.primaryContainer,
-                borderRadius: BorderRadius.circular(28),
+                borderRadius: BorderRadius.circular(AppRadii.dialog),
               ),
               child: Icon(Icons.notifications_active,
                   size: 48, color: scheme.onPrimaryContainer),

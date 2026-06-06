@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/app_feedback.dart';
 import '../../../../core/widgets/app_spacing.dart';
 import '../providers/settings_provider.dart';
+
+// Desktop forms read better constrained to a single readable column.
+const double _kFormMaxWidth = 520;
 
 /// App settings. Phase 4: the per-account Groq API key that enables the AI
 /// fallback parser (regex runs first; AI only when a key is set). The key is
@@ -44,73 +48,64 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Ayarlar')),
-      body: ListView(
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        children: [
-          Text('Yapay zeka destekli okuma', style: theme.textTheme.titleMedium),
-          AppSpacing.gapSm,
-          Text(
-            'Banka bildirimleri once cihazda kural tabanli okunur. Taninmayan '
-            'bir bicim icin Groq API anahtarinizi girerseniz, yedek olarak '
-            'yapay zeka kullanilir. Anahtar girilmezse hicbir veri disari '
-            'gonderilmez.',
-            style: theme.textTheme.bodySmall
-                ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-          ),
-          AppSpacing.gapLg,
-          TextField(
-            controller: _keyController,
-            obscureText: _obscure,
-            autocorrect: false,
-            enableSuggestions: false,
-            decoration: InputDecoration(
-              labelText: 'Groq API anahtari',
-              hintText: 'gsk_...',
-              border: const OutlineInputBorder(),
-              prefixIcon: const Icon(Icons.key),
-              suffixIcon: IconButton(
-                icon: Icon(_obscure ? Icons.visibility : Icons.visibility_off),
-                tooltip: _obscure ? 'Goster' : 'Gizle',
-                onPressed: () => setState(() => _obscure = !_obscure),
-              ),
-            ),
-          ),
-          AppSpacing.gapMd,
-          Row(
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: _kFormMaxWidth),
+          child: ListView(
+            padding: const EdgeInsets.all(AppSpacing.xl),
             children: [
-              Expanded(
-                child: FilledButton.icon(
-                  onPressed: _saving ? null : _save,
-                  icon: const Icon(Icons.check),
-                  label: const Text('Kaydet'),
+              Text('Yapay zeka destekli okuma',
+                  style: theme.textTheme.titleMedium),
+              AppSpacing.gapSm,
+              Text(
+                'Banka bildirimleri once cihazda kural tabanli okunur. '
+                'Taninmayan bir bicim icin Groq API anahtarinizi girerseniz, '
+                'yedek olarak yapay zeka kullanilir. Anahtar girilmezse hicbir '
+                'veri disari gonderilmez.',
+                style: theme.textTheme.bodySmall
+                    ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+              ),
+              AppSpacing.gapLg,
+              TextField(
+                controller: _keyController,
+                obscureText: _obscure,
+                autocorrect: false,
+                enableSuggestions: false,
+                decoration: InputDecoration(
+                  labelText: 'Groq API anahtari',
+                  hintText: 'gsk_...',
+                  prefixIcon: const Icon(Icons.key),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                        _obscure ? Icons.visibility : Icons.visibility_off),
+                    tooltip: _obscure ? 'Goster' : 'Gizle',
+                    onPressed: () => setState(() => _obscure = !_obscure),
+                  ),
                 ),
               ),
-              const SizedBox(width: AppSpacing.md),
-              OutlinedButton.icon(
-                onPressed: _saving || !hasKey ? null : _clear,
-                icon: const Icon(Icons.delete_outline),
-                label: const Text('Temizle'),
+              AppSpacing.gapMd,
+              Row(
+                children: [
+                  Expanded(
+                    child: FilledButton.icon(
+                      onPressed: _saving ? null : _save,
+                      icon: const Icon(Icons.check),
+                      label: const Text('Kaydet'),
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  OutlinedButton.icon(
+                    onPressed: _saving || !hasKey ? null : _clear,
+                    icon: const Icon(Icons.delete_outline),
+                    label: const Text('Temizle'),
+                  ),
+                ],
               ),
+              AppSpacing.gapLg,
+              _StatusRow(hasKey: hasKey),
             ],
           ),
-          AppSpacing.gapLg,
-          Row(
-            children: [
-              Icon(
-                hasKey ? Icons.check_circle_outline : Icons.info_outline,
-                size: 18,
-                color: hasKey
-                    ? Colors.green.shade600
-                    : theme.colorScheme.onSurfaceVariant,
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Text(
-                hasKey ? 'Yapay zeka yedegi acik' : 'Yapay zeka yedegi kapali',
-                style: theme.textTheme.bodySmall,
-              ),
-            ],
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -142,5 +137,33 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     } else {
       AppFeedback.error(context, 'Silinemedi: $error');
     }
+  }
+}
+
+// AI-fallback on/off indicator: income-green check when a key is set.
+class _StatusRow extends StatelessWidget {
+  const _StatusRow({required this.hasKey});
+
+  final bool hasKey;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Row(
+      children: [
+        Icon(
+          hasKey ? Icons.check_circle : Icons.info_outline,
+          size: 18,
+          color: hasKey
+              ? context.money.income
+              : theme.colorScheme.onSurfaceVariant,
+        ),
+        const SizedBox(width: AppSpacing.sm),
+        Text(
+          hasKey ? 'Yapay zeka yedegi acik' : 'Yapay zeka yedegi kapali',
+          style: theme.textTheme.bodySmall,
+        ),
+      ],
+    );
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/widgets/app_spacing.dart';
 
 /// Persistent banner on the desktop/web archive making the capture model clear:
@@ -13,10 +14,10 @@ class CaptureRunsOnPhoneBanner extends StatelessWidget {
     final scheme = theme.colorScheme;
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         color: scheme.tertiaryContainer,
-        borderRadius: BorderRadius.circular(AppSpacing.sm),
+        borderRadius: AppRadii.cardR,
       ),
       child: Row(
         children: [
