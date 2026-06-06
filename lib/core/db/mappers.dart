@@ -23,6 +23,7 @@ Transaction transactionToDomain(LocalTransaction r) => Transaction(
       description: r.description,
       source: r.source,
       notificationId: r.notificationId,
+      pending: r.pending,
     );
 
 Category categoryToDomain(LocalCategory r) => Category(
@@ -87,6 +88,7 @@ LocalTransactionsCompanion transactionCompanionFromRemote(
     description: Value(j['description'] as String?),
     source: Value((j['source'] as String?) ?? 'manual'),
     notificationId: Value(j['notification_id'] as String?),
+    pending: Value((j['pending'] as bool?) ?? false),
     createdAt: Value(DateTime.parse(j['created_at'] as String)),
     updatedAt: Value(DateTime.parse(j['updated_at'] as String)),
     deletedAt: Value(_parseNullableDate(j['deleted_at'])),
@@ -139,6 +141,16 @@ LocalMediaStatsCompanion mediaStatsCompanionFromRemote(Map<String, dynamic> j) {
     decided: Value((j['decided'] as int?) ?? 0),
     kept: Value((j['kept'] as int?) ?? 0),
     deleted: Value((j['deleted'] as int?) ?? 0),
+    updatedAt: Value(DateTime.parse(j['updated_at'] as String)),
+  );
+}
+
+LocalUserSettingsCompanion userSettingsCompanionFromRemote(
+    Map<String, dynamic> j) {
+  return LocalUserSettingsCompanion(
+    id: Value(j['id'] as String),
+    userId: Value(j['user_id'] as String),
+    groqApiKey: Value(j['groq_api_key'] as String?),
     updatedAt: Value(DateTime.parse(j['updated_at'] as String)),
   );
 }

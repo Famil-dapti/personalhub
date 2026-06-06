@@ -12,6 +12,9 @@ class LocalTransactions extends Table {
   TextColumn get description => text().nullable()();
   TextColumn get source => text().withDefault(const Constant('manual'))();
   TextColumn get notificationId => text().nullable()();
+  // Phase 4: an SMS-derived draft awaiting user confirm. Excluded from the
+  // balance and shown as "Taslak" until committed (pending = false).
+  BoolColumn get pending => boolean().withDefault(const Constant(false))();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
   DateTimeColumn get deletedAt => dateTime().nullable()();
@@ -112,6 +115,20 @@ class LocalMediaStats extends Table {
   IntColumn get decided => integer().withDefault(const Constant(0))();
   IntColumn get kept => integer().withDefault(const Constant(0))();
   IntColumn get deleted => integer().withDefault(const Constant(0))();
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+/// Mirror of the Supabase `user_settings` table — per-user app settings
+/// (Phase 4). Holds the optional Groq API key for the AI fallback parser. One
+/// row per user (id == user id) so both phones converge on the same row;
+/// standard `updated_at` LWW sync.
+class LocalUserSettings extends Table {
+  TextColumn get id => text()();
+  TextColumn get userId => text()();
+  TextColumn get groqApiKey => text().nullable()();
   DateTimeColumn get updatedAt => dateTime()();
 
   @override

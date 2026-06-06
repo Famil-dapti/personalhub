@@ -1,9 +1,14 @@
 # Project-state.md
 
 ## Current Phase
+**Phase 4 — Wallet + Notification Integration** ✅ **CODE COMPLETE (2026-06-06; on-device verify
+deferred).** Bank/payment notifications become editable wallet transactions. Drift schemaVersion is
+now **5**. See the Phase 4 section below for the full breakdown.
+
 **Phase 3 — Media Cleaner** ✅ **CODE COMPLETE (2026-06-06; on-device verify deferred).** Swipe-review
-of device photos + videos. See the Phase 3 section below for the full breakdown. Drift schemaVersion is
-now **4**. Supabase migration for the new `media_stats` table is written but **NOT yet deployed**.
+of device photos + videos. See the Phase 3 section below for the full breakdown. Supabase migration
+for the `media_stats` table is ✅ **DEPLOYED** (CI auto-applied on push to dev; verified 2026-06-06 —
+`media_stats` table live, RLS enabled).
 
 **Phase 2 — Notification Archiver** ✅ Phase 2A (UI/data) MERGED+LIVE; **Phase 2B (native capture)
 CODE COMPLETE + VERIFIED ON DEVICE** (uncommitted on `dev`). Captured notifications flow:
@@ -57,6 +62,44 @@ re-verify deferred with the rest of Android testing):
 Partially verified (launch + production wasm serving). Authenticated offline E2E (add -> persist ->
 sync) NOT yet runtime-verified — deferred to on-device (Android phone) test.
 
+## Phase 4 — Wallet + Notification Integration (2026-06-06, CODE COMPLETE; on-device verify deferred)
+
+Turns bank/payment notifications into **editable** wallet transactions. `flutter analyze` clean;
+parser unit tests pass; `flutter build web` OK. On-device verification deferred to the same parked
+Android session as the rest.
+
+**Decisions locked with the user (see memory `phase4-notification-wallet-integration`):**
+- **Hybrid parser:** device-side regex FIRST (free, offline, private); **Groq AI fallback** only when
+  regex misses AND the account configured a key. Per-account, opt-in.
+- **Groq key** entered in a new **Ayarlar** tab, stored in Supabase `user_settings` (RLS, one row per
+  user, synced to both phones + web). Groq called directly from Dart, lazily (on "Cuzdana ekle" tap),
+  model `llama-3.1-8b-instant`; only title+body leave the device.
+- **Manual confirm:** "Cuzdana ekle" opens a pre-filled, fully editable AddTransactionScreen; on save
+  links `notification_id` + `source='notification'`.
+- **SMS auto-route:** an SMS-app notification whose body has an `NN.NN` amount becomes a cancelable
+  `pending` draft (excluded from balance; tap = edit+commit, swipe = cancel). Native-capture path only
+  (never re-derived on the synced copy); idempotent via `transactionExistsForNotification`.
+- **All 4 nav labels localized to Turkish:** Cuzdan / Bildirimler / Medya / Ayarlar.
+
+**Bank-format research (web, 2026-06-06):** no verbatim samples are publicly indexed; confirmed the
+package names (primary routing signal) + keyword vocabulary. Sources: Kapital/Birbank
+`az.kapitalbank.mbanking`, ABB `iba.mobilbank`, Leobank `com.ftfarm.leo` (uses ₼ + space thousands),
+M10 `com.m10`, Google Pay `com.google.android.apps.walletnfcrel` + `com.google.android.gms`. Income
+keywords medaxil/daxilolma/kocuruldu/kesbek/maas/burs; expense mexaric/odenis/alis/cixaris. Per-package
+templates are scaffolded but defer to the generic parser until real samples arrive.
+
+**What was built:**
+- `features/notifications/domain/` — diacritics, parsed_transaction, package_templates, notification_parser.
+- `features/notifications/data/groq_client.dart` + `presentation/providers/extractor_provider.dart`.
+- `features/settings/` — SettingsScreen (Ayarlar tab) + settings_provider (groqApiKeyProvider).
+- Wallet: `presentation/models/transaction_prefill.dart`; AddTransactionScreen prefill+commit; wallet_screen
+  draft tap-to-edit + "Taslak" badge; walletSummary excludes pending; TransactionsController.update().
+- Drift: `LocalUserSettings` + `transactions.pending`; **schemaVersion 4->5** + onUpgrade; mappers + sync
+  (`kUserSettingsTable` pulled by updated_at); `transactionExistsForNotification` guard.
+- Nav: 4th tab + `/settings` route; all labels Turkish. pubspec: `http ^1.2.2` (direct dep).
+- **Supabase migrations:** `20260608090000_user_settings.sql`, `20260608091000_transaction_pending.sql`.
+  ⛔ **NOT yet applied to remote — auto-deploys on next push to dev (CI).**
+
 ## Phase 3 — Media Cleaner (2026-06-06, CODE COMPLETE; on-device verify deferred)
 
 Swipe-review device media to keep or delete. **Android/mobile-only**; web is a read-only stats view
@@ -99,7 +142,7 @@ as the notification re-verify + Phase 1.2 offline E2E.
 - **pubspec:** `photo_manager ^3.9.0`, `flutter_card_swiper ^7.2.0` (drift/sqlite3 versions UNCHANGED —
   web wasm still matches).
 - **Supabase migration:** `supabase/migrations/20260607090000_media_stats.sql` (media_stats table + RLS
-  + set_updated_at trigger). ⛔ **NOT yet applied to remote — pending deploy.**
+  + set_updated_at trigger). ✅ **DEPLOYED to remote** (CI auto-applied on push; verified 2026-06-06).
 
 **Future note:** connect to Google Photos accounts later so the app can also review/act on cloud photos
 (recorded in Project-plan.md as a future phase).

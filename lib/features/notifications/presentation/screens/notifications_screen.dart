@@ -9,6 +9,7 @@ import '../../../../core/widgets/app_spacing.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../../../../core/widgets/skeleton.dart';
 import '../../data/models/notification_model.dart';
+import '../../domain/notification_parser.dart';
 import '../providers/capture_providers.dart';
 import '../providers/notifications_provider.dart';
 import '../widgets/capture_runs_on_phone_banner.dart';
@@ -404,6 +405,11 @@ class NotificationDetailBody extends StatelessWidget {
           DetectedTransactionCard(
             readOnly: readOnly,
             onCreate: onCreateTransaction,
+            parsed: parseNotification(
+              appPackage: item.appPackage,
+              title: item.title,
+              body: item.body,
+            ),
           ),
           AppSpacing.gapLg,
         ],

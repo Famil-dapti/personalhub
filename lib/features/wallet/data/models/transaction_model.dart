@@ -9,6 +9,7 @@ class Transaction {
     this.description,
     this.source = 'manual',
     this.notificationId,
+    this.pending = false,
   });
 
   final String id;
@@ -20,6 +21,7 @@ class Transaction {
   final String? description;
   final String source; // 'manual' | 'notification'
   final String? notificationId;
+  final bool pending; // SMS-derived draft awaiting confirm (Phase 4)
 
   bool get isIncome => amount >= 0;
   bool get isExpense => amount < 0;
@@ -35,6 +37,7 @@ class Transaction {
       description: json['description'] as String?,
       source: (json['source'] as String?) ?? 'manual',
       notificationId: json['notification_id'] as String?,
+      pending: (json['pending'] as bool?) ?? false,
     );
   }
 
@@ -49,6 +52,7 @@ class Transaction {
       'description': description,
       'source': source,
       'notification_id': notificationId,
+      'pending': pending,
       'created_at': createdAt.toIso8601String(),
     };
   }

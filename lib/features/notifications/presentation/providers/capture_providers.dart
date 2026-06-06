@@ -7,6 +7,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../data/models/notification_model.dart';
 import '../../data/notification_capture_service.dart';
+import '../../domain/notification_parser.dart';
 import 'notifications_provider.dart';
 
 final notificationCaptureServiceProvider =
@@ -92,37 +93,24 @@ class NotificationCaptureController {
         : null;
     final title = m['title'] as String?;
     final body = m['body'] as String?;
+    final appPackage = m['app_package'] as String?;
     return NotificationItem(
       id: '', // ingest assigns a uuid
       userId: '', // ingest binds the real signed-in user
       createdAt: DateTime.now(),
-      appPackage: m['app_package'] as String?,
+      appPackage: appPackage,
       appName: m['app_name'] as String?,
       title: title,
       body: body,
       postedAt: posted,
-      isTransaction: looksLikeTransaction(title, body),
+      // The Phase 4 parser is the single transaction detector: a parse hit
+      // (regex amount + money signal) flags the notification.
+      isTransaction:
+          parseNotification(appPackage: appPackage, title: title, body: body) !=
+              null,
       rawJson: jsonEncode(m),
       deviceId: device.id,
       deviceName: device.name,
     );
   }
-}
-
-// Rough first-pass payment detector (refined in Phase 4). Flags a notification
-// as a transaction when it pairs a money amount with a currency or banking word.
-bool looksLikeTransaction(String? title, String? body) {
-  final text = '${title ?? ''} ${body ?? ''}'.toLowerCase().trim();
-  if (text.isEmpty) return false;
-
-  final hasAmount = RegExp(r'\d+[.,]\d{2}').hasMatch(text) ||
-      RegExp(r'\d{2,}').hasMatch(text);
-  const currency = ['azn', '₼', 'manat', 'usd', r'$', 'eur', '€'];
-  const keywords = [
-    'odeme', 'odendi', 'kart', 'hesab', 'transfer', 'balans', 'mebleg',
-    'cixaris', 'medaxil', 'payment', 'paid', 'debit', 'credit',
-  ];
-  final hasCurrency = currency.any(text.contains);
-  final hasKeyword = keywords.any(text.contains);
-  return hasAmount && (hasCurrency || hasKeyword);
 }

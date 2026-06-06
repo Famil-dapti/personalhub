@@ -7,10 +7,16 @@ import '../providers/category_provider.dart';
 import 'category_visuals.dart';
 
 class TransactionTile extends ConsumerWidget {
-  const TransactionTile({super.key, required this.transaction, this.onDelete});
+  const TransactionTile({
+    super.key,
+    required this.transaction,
+    this.onDelete,
+    this.onTap,
+  });
 
   final Transaction transaction;
   final VoidCallback? onDelete;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -25,7 +31,15 @@ class TransactionTile extends ConsumerWidget {
         backgroundColor: color.withValues(alpha: 0.15),
         child: Icon(categoryIcon(category), color: color),
       ),
-      title: Text(category?.name ?? 'Kategorisiz'),
+      title: Row(
+        children: [
+          Flexible(child: Text(category?.name ?? 'Kategorisiz')),
+          if (transaction.pending) ...[
+            const SizedBox(width: 8),
+            _DraftBadge(scheme: theme.colorScheme),
+          ],
+        ],
+      ),
       subtitle: Text(
         [
           if (transaction.description?.isNotEmpty ?? false)
@@ -40,7 +54,34 @@ class TransactionTile extends ConsumerWidget {
         style: theme.textTheme.bodyLarge
             ?.copyWith(color: amountColor, fontWeight: FontWeight.w600),
       ),
+      onTap: onTap,
       onLongPress: onDelete,
+    );
+  }
+}
+
+/// "Taslak" chip on an unconfirmed SMS-derived transaction (Phase 4).
+class _DraftBadge extends StatelessWidget {
+  const _DraftBadge({required this.scheme});
+
+  final ColorScheme scheme;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: scheme.tertiaryContainer,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        'Taslak',
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          color: scheme.onTertiaryContainer,
+        ),
+      ),
     );
   }
 }

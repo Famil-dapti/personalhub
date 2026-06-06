@@ -91,6 +91,21 @@ class $LocalTransactionsTable extends LocalTransactions
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _pendingMeta = const VerificationMeta(
+    'pending',
+  );
+  @override
+  late final GeneratedColumn<bool> pending = GeneratedColumn<bool>(
+    'pending',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("pending" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -134,6 +149,7 @@ class $LocalTransactionsTable extends LocalTransactions
     description,
     source,
     notificationId,
+    pending,
     createdAt,
     updatedAt,
     deletedAt,
@@ -207,6 +223,12 @@ class $LocalTransactionsTable extends LocalTransactions
         ),
       );
     }
+    if (data.containsKey('pending')) {
+      context.handle(
+        _pendingMeta,
+        pending.isAcceptableOrUnknown(data['pending']!, _pendingMeta),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -270,6 +292,10 @@ class $LocalTransactionsTable extends LocalTransactions
         DriftSqlType.string,
         data['${effectivePrefix}notification_id'],
       ),
+      pending: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}pending'],
+      )!,
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -301,6 +327,7 @@ class LocalTransaction extends DataClass
   final String? description;
   final String source;
   final String? notificationId;
+  final bool pending;
   final DateTime createdAt;
   final DateTime updatedAt;
   final DateTime? deletedAt;
@@ -313,6 +340,7 @@ class LocalTransaction extends DataClass
     this.description,
     required this.source,
     this.notificationId,
+    required this.pending,
     required this.createdAt,
     required this.updatedAt,
     this.deletedAt,
@@ -334,6 +362,7 @@ class LocalTransaction extends DataClass
     if (!nullToAbsent || notificationId != null) {
       map['notification_id'] = Variable<String>(notificationId);
     }
+    map['pending'] = Variable<bool>(pending);
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     if (!nullToAbsent || deletedAt != null) {
@@ -358,6 +387,7 @@ class LocalTransaction extends DataClass
       notificationId: notificationId == null && nullToAbsent
           ? const Value.absent()
           : Value(notificationId),
+      pending: Value(pending),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
       deletedAt: deletedAt == null && nullToAbsent
@@ -380,6 +410,7 @@ class LocalTransaction extends DataClass
       description: serializer.fromJson<String?>(json['description']),
       source: serializer.fromJson<String>(json['source']),
       notificationId: serializer.fromJson<String?>(json['notificationId']),
+      pending: serializer.fromJson<bool>(json['pending']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
@@ -397,6 +428,7 @@ class LocalTransaction extends DataClass
       'description': serializer.toJson<String?>(description),
       'source': serializer.toJson<String>(source),
       'notificationId': serializer.toJson<String?>(notificationId),
+      'pending': serializer.toJson<bool>(pending),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'deletedAt': serializer.toJson<DateTime?>(deletedAt),
@@ -412,6 +444,7 @@ class LocalTransaction extends DataClass
     Value<String?> description = const Value.absent(),
     String? source,
     Value<String?> notificationId = const Value.absent(),
+    bool? pending,
     DateTime? createdAt,
     DateTime? updatedAt,
     Value<DateTime?> deletedAt = const Value.absent(),
@@ -426,6 +459,7 @@ class LocalTransaction extends DataClass
     notificationId: notificationId.present
         ? notificationId.value
         : this.notificationId,
+    pending: pending ?? this.pending,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
     deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
@@ -446,6 +480,7 @@ class LocalTransaction extends DataClass
       notificationId: data.notificationId.present
           ? data.notificationId.value
           : this.notificationId,
+      pending: data.pending.present ? data.pending.value : this.pending,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
@@ -463,6 +498,7 @@ class LocalTransaction extends DataClass
           ..write('description: $description, ')
           ..write('source: $source, ')
           ..write('notificationId: $notificationId, ')
+          ..write('pending: $pending, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('deletedAt: $deletedAt')
@@ -480,6 +516,7 @@ class LocalTransaction extends DataClass
     description,
     source,
     notificationId,
+    pending,
     createdAt,
     updatedAt,
     deletedAt,
@@ -496,6 +533,7 @@ class LocalTransaction extends DataClass
           other.description == this.description &&
           other.source == this.source &&
           other.notificationId == this.notificationId &&
+          other.pending == this.pending &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
           other.deletedAt == this.deletedAt);
@@ -510,6 +548,7 @@ class LocalTransactionsCompanion extends UpdateCompanion<LocalTransaction> {
   final Value<String?> description;
   final Value<String> source;
   final Value<String?> notificationId;
+  final Value<bool> pending;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<DateTime?> deletedAt;
@@ -523,6 +562,7 @@ class LocalTransactionsCompanion extends UpdateCompanion<LocalTransaction> {
     this.description = const Value.absent(),
     this.source = const Value.absent(),
     this.notificationId = const Value.absent(),
+    this.pending = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.deletedAt = const Value.absent(),
@@ -537,6 +577,7 @@ class LocalTransactionsCompanion extends UpdateCompanion<LocalTransaction> {
     this.description = const Value.absent(),
     this.source = const Value.absent(),
     this.notificationId = const Value.absent(),
+    this.pending = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
     this.deletedAt = const Value.absent(),
@@ -555,6 +596,7 @@ class LocalTransactionsCompanion extends UpdateCompanion<LocalTransaction> {
     Expression<String>? description,
     Expression<String>? source,
     Expression<String>? notificationId,
+    Expression<bool>? pending,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<DateTime>? deletedAt,
@@ -569,6 +611,7 @@ class LocalTransactionsCompanion extends UpdateCompanion<LocalTransaction> {
       if (description != null) 'description': description,
       if (source != null) 'source': source,
       if (notificationId != null) 'notification_id': notificationId,
+      if (pending != null) 'pending': pending,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (deletedAt != null) 'deleted_at': deletedAt,
@@ -585,6 +628,7 @@ class LocalTransactionsCompanion extends UpdateCompanion<LocalTransaction> {
     Value<String?>? description,
     Value<String>? source,
     Value<String?>? notificationId,
+    Value<bool>? pending,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
     Value<DateTime?>? deletedAt,
@@ -599,6 +643,7 @@ class LocalTransactionsCompanion extends UpdateCompanion<LocalTransaction> {
       description: description ?? this.description,
       source: source ?? this.source,
       notificationId: notificationId ?? this.notificationId,
+      pending: pending ?? this.pending,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       deletedAt: deletedAt ?? this.deletedAt,
@@ -633,6 +678,9 @@ class LocalTransactionsCompanion extends UpdateCompanion<LocalTransaction> {
     if (notificationId.present) {
       map['notification_id'] = Variable<String>(notificationId.value);
     }
+    if (pending.present) {
+      map['pending'] = Variable<bool>(pending.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -659,6 +707,7 @@ class LocalTransactionsCompanion extends UpdateCompanion<LocalTransaction> {
           ..write('description: $description, ')
           ..write('source: $source, ')
           ..write('notificationId: $notificationId, ')
+          ..write('pending: $pending, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('deletedAt: $deletedAt, ')
@@ -3675,6 +3724,321 @@ class LocalMediaStatsCompanion extends UpdateCompanion<LocalMediaStat> {
   }
 }
 
+class $LocalUserSettingsTable extends LocalUserSettings
+    with TableInfo<$LocalUserSettingsTable, LocalUserSetting> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalUserSettingsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _groqApiKeyMeta = const VerificationMeta(
+    'groqApiKey',
+  );
+  @override
+  late final GeneratedColumn<String> groqApiKey = GeneratedColumn<String>(
+    'groq_api_key',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, userId, groqApiKey, updatedAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_user_settings';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalUserSetting> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
+    }
+    if (data.containsKey('groq_api_key')) {
+      context.handle(
+        _groqApiKeyMeta,
+        groqApiKey.isAcceptableOrUnknown(
+          data['groq_api_key']!,
+          _groqApiKeyMeta,
+        ),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  LocalUserSetting map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalUserSetting(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      )!,
+      groqApiKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}groq_api_key'],
+      ),
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $LocalUserSettingsTable createAlias(String alias) {
+    return $LocalUserSettingsTable(attachedDatabase, alias);
+  }
+}
+
+class LocalUserSetting extends DataClass
+    implements Insertable<LocalUserSetting> {
+  final String id;
+  final String userId;
+  final String? groqApiKey;
+  final DateTime updatedAt;
+  const LocalUserSetting({
+    required this.id,
+    required this.userId,
+    this.groqApiKey,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['user_id'] = Variable<String>(userId);
+    if (!nullToAbsent || groqApiKey != null) {
+      map['groq_api_key'] = Variable<String>(groqApiKey);
+    }
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  LocalUserSettingsCompanion toCompanion(bool nullToAbsent) {
+    return LocalUserSettingsCompanion(
+      id: Value(id),
+      userId: Value(userId),
+      groqApiKey: groqApiKey == null && nullToAbsent
+          ? const Value.absent()
+          : Value(groqApiKey),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory LocalUserSetting.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalUserSetting(
+      id: serializer.fromJson<String>(json['id']),
+      userId: serializer.fromJson<String>(json['userId']),
+      groqApiKey: serializer.fromJson<String?>(json['groqApiKey']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'userId': serializer.toJson<String>(userId),
+      'groqApiKey': serializer.toJson<String?>(groqApiKey),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  LocalUserSetting copyWith({
+    String? id,
+    String? userId,
+    Value<String?> groqApiKey = const Value.absent(),
+    DateTime? updatedAt,
+  }) => LocalUserSetting(
+    id: id ?? this.id,
+    userId: userId ?? this.userId,
+    groqApiKey: groqApiKey.present ? groqApiKey.value : this.groqApiKey,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  LocalUserSetting copyWithCompanion(LocalUserSettingsCompanion data) {
+    return LocalUserSetting(
+      id: data.id.present ? data.id.value : this.id,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      groqApiKey: data.groqApiKey.present
+          ? data.groqApiKey.value
+          : this.groqApiKey,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalUserSetting(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('groqApiKey: $groqApiKey, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, userId, groqApiKey, updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalUserSetting &&
+          other.id == this.id &&
+          other.userId == this.userId &&
+          other.groqApiKey == this.groqApiKey &&
+          other.updatedAt == this.updatedAt);
+}
+
+class LocalUserSettingsCompanion extends UpdateCompanion<LocalUserSetting> {
+  final Value<String> id;
+  final Value<String> userId;
+  final Value<String?> groqApiKey;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const LocalUserSettingsCompanion({
+    this.id = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.groqApiKey = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalUserSettingsCompanion.insert({
+    required String id,
+    required String userId,
+    this.groqApiKey = const Value.absent(),
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       userId = Value(userId),
+       updatedAt = Value(updatedAt);
+  static Insertable<LocalUserSetting> custom({
+    Expression<String>? id,
+    Expression<String>? userId,
+    Expression<String>? groqApiKey,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (userId != null) 'user_id': userId,
+      if (groqApiKey != null) 'groq_api_key': groqApiKey,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalUserSettingsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? userId,
+    Value<String?>? groqApiKey,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return LocalUserSettingsCompanion(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      groqApiKey: groqApiKey ?? this.groqApiKey,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (groqApiKey.present) {
+      map['groq_api_key'] = Variable<String>(groqApiKey.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalUserSettingsCompanion(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('groqApiKey: $groqApiKey, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $SyncOutboxTable extends SyncOutbox
     with TableInfo<$SyncOutboxTable, SyncOutboxData> {
   @override
@@ -4328,6 +4692,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $LocalMediaStatsTable localMediaStats = $LocalMediaStatsTable(
     this,
   );
+  late final $LocalUserSettingsTable localUserSettings =
+      $LocalUserSettingsTable(this);
   late final $SyncOutboxTable syncOutbox = $SyncOutboxTable(this);
   late final $SyncStateTable syncState = $SyncStateTable(this);
   @override
@@ -4341,6 +4707,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     localMediaAssets,
     localMediaDecisions,
     localMediaStats,
+    localUserSettings,
     syncOutbox,
     syncState,
   ];
@@ -4356,6 +4723,7 @@ typedef $$LocalTransactionsTableCreateCompanionBuilder =
       Value<String?> description,
       Value<String> source,
       Value<String?> notificationId,
+      Value<bool> pending,
       required DateTime createdAt,
       required DateTime updatedAt,
       Value<DateTime?> deletedAt,
@@ -4371,6 +4739,7 @@ typedef $$LocalTransactionsTableUpdateCompanionBuilder =
       Value<String?> description,
       Value<String> source,
       Value<String?> notificationId,
+      Value<bool> pending,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<DateTime?> deletedAt,
@@ -4423,6 +4792,11 @@ class $$LocalTransactionsTableFilterComposer
 
   ColumnFilters<String> get notificationId => $composableBuilder(
     column: $table.notificationId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get pending => $composableBuilder(
+    column: $table.pending,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -4491,6 +4865,11 @@ class $$LocalTransactionsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get pending => $composableBuilder(
+    column: $table.pending,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -4545,6 +4924,9 @@ class $$LocalTransactionsTableAnnotationComposer
     column: $table.notificationId,
     builder: (column) => column,
   );
+
+  GeneratedColumn<bool> get pending =>
+      $composableBuilder(column: $table.pending, builder: (column) => column);
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -4604,6 +4986,7 @@ class $$LocalTransactionsTableTableManager
                 Value<String?> description = const Value.absent(),
                 Value<String> source = const Value.absent(),
                 Value<String?> notificationId = const Value.absent(),
+                Value<bool> pending = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
@@ -4617,6 +5000,7 @@ class $$LocalTransactionsTableTableManager
                 description: description,
                 source: source,
                 notificationId: notificationId,
+                pending: pending,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 deletedAt: deletedAt,
@@ -4632,6 +5016,7 @@ class $$LocalTransactionsTableTableManager
                 Value<String?> description = const Value.absent(),
                 Value<String> source = const Value.absent(),
                 Value<String?> notificationId = const Value.absent(),
+                Value<bool> pending = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
                 Value<DateTime?> deletedAt = const Value.absent(),
@@ -4645,6 +5030,7 @@ class $$LocalTransactionsTableTableManager
                 description: description,
                 source: source,
                 notificationId: notificationId,
+                pending: pending,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 deletedAt: deletedAt,
@@ -6194,6 +6580,202 @@ typedef $$LocalMediaStatsTableProcessedTableManager =
       LocalMediaStat,
       PrefetchHooks Function()
     >;
+typedef $$LocalUserSettingsTableCreateCompanionBuilder =
+    LocalUserSettingsCompanion Function({
+      required String id,
+      required String userId,
+      Value<String?> groqApiKey,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$LocalUserSettingsTableUpdateCompanionBuilder =
+    LocalUserSettingsCompanion Function({
+      Value<String> id,
+      Value<String> userId,
+      Value<String?> groqApiKey,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$LocalUserSettingsTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalUserSettingsTable> {
+  $$LocalUserSettingsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get groqApiKey => $composableBuilder(
+    column: $table.groqApiKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LocalUserSettingsTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalUserSettingsTable> {
+  $$LocalUserSettingsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get groqApiKey => $composableBuilder(
+    column: $table.groqApiKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LocalUserSettingsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalUserSettingsTable> {
+  $$LocalUserSettingsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get userId =>
+      $composableBuilder(column: $table.userId, builder: (column) => column);
+
+  GeneratedColumn<String> get groqApiKey => $composableBuilder(
+    column: $table.groqApiKey,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$LocalUserSettingsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LocalUserSettingsTable,
+          LocalUserSetting,
+          $$LocalUserSettingsTableFilterComposer,
+          $$LocalUserSettingsTableOrderingComposer,
+          $$LocalUserSettingsTableAnnotationComposer,
+          $$LocalUserSettingsTableCreateCompanionBuilder,
+          $$LocalUserSettingsTableUpdateCompanionBuilder,
+          (
+            LocalUserSetting,
+            BaseReferences<
+              _$AppDatabase,
+              $LocalUserSettingsTable,
+              LocalUserSetting
+            >,
+          ),
+          LocalUserSetting,
+          PrefetchHooks Function()
+        > {
+  $$LocalUserSettingsTableTableManager(
+    _$AppDatabase db,
+    $LocalUserSettingsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalUserSettingsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LocalUserSettingsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LocalUserSettingsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> userId = const Value.absent(),
+                Value<String?> groqApiKey = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalUserSettingsCompanion(
+                id: id,
+                userId: userId,
+                groqApiKey: groqApiKey,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String userId,
+                Value<String?> groqApiKey = const Value.absent(),
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => LocalUserSettingsCompanion.insert(
+                id: id,
+                userId: userId,
+                groqApiKey: groqApiKey,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LocalUserSettingsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LocalUserSettingsTable,
+      LocalUserSetting,
+      $$LocalUserSettingsTableFilterComposer,
+      $$LocalUserSettingsTableOrderingComposer,
+      $$LocalUserSettingsTableAnnotationComposer,
+      $$LocalUserSettingsTableCreateCompanionBuilder,
+      $$LocalUserSettingsTableUpdateCompanionBuilder,
+      (
+        LocalUserSetting,
+        BaseReferences<
+          _$AppDatabase,
+          $LocalUserSettingsTable,
+          LocalUserSetting
+        >,
+      ),
+      LocalUserSetting,
+      PrefetchHooks Function()
+    >;
 typedef $$SyncOutboxTableCreateCompanionBuilder =
     SyncOutboxCompanion Function({
       required String id,
@@ -6576,6 +7158,8 @@ class $AppDatabaseManager {
       $$LocalMediaDecisionsTableTableManager(_db, _db.localMediaDecisions);
   $$LocalMediaStatsTableTableManager get localMediaStats =>
       $$LocalMediaStatsTableTableManager(_db, _db.localMediaStats);
+  $$LocalUserSettingsTableTableManager get localUserSettings =>
+      $$LocalUserSettingsTableTableManager(_db, _db.localUserSettings);
   $$SyncOutboxTableTableManager get syncOutbox =>
       $$SyncOutboxTableTableManager(_db, _db.syncOutbox);
   $$SyncStateTableTableManager get syncState =>

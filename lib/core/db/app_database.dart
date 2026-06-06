@@ -13,6 +13,7 @@ const String kTransactionsTable = 'transactions';
 const String kCategoriesTable = 'categories';
 const String kNotificationsTable = 'notifications';
 const String kMediaStatsTable = 'media_stats';
+const String kUserSettingsTable = 'user_settings';
 
 // Media decision kinds (Phase 3). 'later' is a defer, not a final decision.
 const String kDecisionKeep = 'keep';
@@ -33,6 +34,7 @@ const _uuid = Uuid();
     LocalMediaAssets,
     LocalMediaDecisions,
     LocalMediaStats,
+    LocalUserSettings,
     SyncOutbox,
     SyncState,
   ],
@@ -41,11 +43,12 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_open());
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   // v2 adds the LocalNotifications mirror (Phase 2). v3 adds per-device capture
-  // attribution columns. v4 adds the Phase 3 media tables. Existing installs
-  // only get the missing pieces.
+  // attribution columns. v4 adds the Phase 3 media tables. v5 adds the Phase 4
+  // user_settings mirror + the transactions.pending draft flag. Existing
+  // installs only get the missing pieces.
   @override
   MigrationStrategy get migration => MigrationStrategy(
         onUpgrade: (m, from, to) async {
@@ -60,6 +63,10 @@ class AppDatabase extends _$AppDatabase {
             await m.createTable(localMediaAssets);
             await m.createTable(localMediaDecisions);
             await m.createTable(localMediaStats);
+          }
+          if (from < 5) {
+            await m.createTable(localUserSettings);
+            await m.addColumn(localTransactions, localTransactions.pending);
           }
         },
       );
@@ -104,6 +111,16 @@ class AppDatabase extends _$AppDatabase {
           .write(LocalTransactionsCompanion(deletedAt: Value(DateTime.now())));
       await _enqueue(kTransactionsTable, id, 'delete', null);
     });
+  }
+
+  /// True if a transaction already links to this notification — the idempotency
+  /// guard for the SMS auto-route so the same alert never spawns two drafts.
+  Future<bool> transactionExistsForNotification(String notificationId) async {
+    final row = await (select(localTransactions)
+          ..where((t) => t.notificationId.equals(notificationId))
+          ..limit(1))
+        .getSingleOrNull();
+    return row != null;
   }
 
   Future<void> enqueueUpsertCategory(
@@ -379,6 +396,28 @@ class AppDatabase extends _$AppDatabase {
 
   Future<void> upsertMediaStats(List<LocalMediaStatsCompanion> rows) {
     return batch((b) => b.insertAllOnConflictUpdate(localMediaStats, rows));
+  }
+
+  // --- User settings (Phase 4, synced per-user) ----------------------------
+
+  /// The signed-in user's settings row (Groq key etc.); null until first set.
+  Stream<LocalUserSetting?> watchUserSettings() {
+    return (select(localUserSettings)..limit(1)).watchSingleOrNull();
+  }
+
+  /// Writes the settings row locally and queues the per-user push.
+  Future<void> enqueueUpsertUserSettings(
+    LocalUserSettingsCompanion row,
+    Map<String, dynamic> payload,
+  ) {
+    return transaction(() async {
+      await into(localUserSettings).insertOnConflictUpdate(row);
+      await _enqueue(kUserSettingsTable, row.id.value, 'upsert', payload);
+    });
+  }
+
+  Future<void> upsertUserSettings(List<LocalUserSettingsCompanion> rows) {
+    return batch((b) => b.insertAllOnConflictUpdate(localUserSettings, rows));
   }
 }
 
