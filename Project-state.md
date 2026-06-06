@@ -1,11 +1,18 @@
 # Project-state.md
 
 ## Current Phase
+**Phase 2A — Notification Archiver (data layer + archive UI)** ✅ CODE COMPLETE on `dev`
+(not yet committed). `flutter analyze` clean, `flutter build web` OK, tests pass. Cross-platform
+and web-verifiable; the Android-native capture path (Phase 2B) is written/verified later on-device.
+
+Deferred by user decision (kept for one on-device session): **Phase 1.2 offline E2E test** +
+**Phase 2B native capture** + **design implementation** (mockups in docs/design/personalhub/).
+Plan: finish notification-app implementation, then plug in the Android phone and verify by sending
+self a message ("if it works in one app it works in all").
+
 **Phase 1.2 — Offline queue (Drift)** ✅ CODE COMPLETE, COMMITTED, MERGED TO MAIN, DEPLOYED LIVE.
 Partially verified (launch + production wasm serving). Authenticated offline E2E (add -> persist ->
-sync) NOT yet runtime-verified — deferred to on-device (Android phone) test next session.
-Parallel: Claude Design mockups returned (docs/design/personalhub/) — implementation happening on `dev`
-in a separate chat. Design impl + Phase 1.2 on-device test are the two open threads.
+sync) NOT yet runtime-verified — deferred to on-device (Android phone) test.
 
 ## Status
 Phase 1.1 built, merged to main, and DEPLOYED. Web app live at
@@ -41,11 +48,30 @@ Custom domain DEFERRED — staying on github.io URL for now; will migrate host l
 - [x] Live: https://famil-dapti.github.io/personalhub/ (verified HTTP 200); login account created
 
 ## In Progress
-Two parallel threads handed off to new chats:
-1. **Design implementation** — Claude Design mockups returned (`docs/design/personalhub/`), being
-   implemented on `dev` in a separate chat.
-2. **Phase 1.2 on-device test** — build to Android phone, verify offline add/delete + reconnect sync.
-Phase 1.1 + Phase 1.2 (code) + UX polish are all committed, merged to main, and deployed live.
+**Phase 2A complete on `dev` (uncommitted).** Notification Archiver data layer + archive UI built.
+Three on-device/visual threads parked for one combined session:
+1. **Phase 2B native capture** — Kotlin NotificationListenerService + foreground service +
+   platform channel → `NotificationsController.ingest()`; phone permission flow.
+2. **Phase 1.2 on-device test** — offline add/delete + reconnect sync.
+3. **Design implementation** — Claude Design mockups (`docs/design/personalhub/`).
+
+### Phase 2A — what was built (2026-06-06)
+- **Decision: lightweight sync, not full offline-first.** Notifications are immutable/append-only,
+  so no edit/delete/LWW/tombstone machinery (unlike wallet). Capture → Drift + outbox → Supabase
+  upsert; clients delta-pull by `created_at` watermark.
+- **No server migration needed** — `notifications` table + RLS already exist (initial_schema).
+  Only the Drift mirror was added: `LocalNotifications` table, schemaVersion 1→2 + `onUpgrade`
+  migration (creates the new table for existing web/IndexedDB installs).
+- `core/db`: LocalNotifications table, watch/upsert/enqueueUpsert helpers, mappers (raw_json jsonb
+  re-encoded to string). `core/sync`: `_pullTable` generalized with a `watermarkColumn` param;
+  notifications pulled by `created_at`. `core/utils/formatters`: `formatRelativeTime` + `formatTime`.
+- Feature `features/notifications/`: NotificationItem model; providers (stream + search/filter/
+  selected + `NotificationsController.ingest` = the Phase 2B capture write entry point); responsive
+  screen (phone list w/ pushed detail + desktop/web master-detail); widgets (card+badge, search,
+  filter chips, detected-transaction card, raw payload, capture banner, brand avatar).
+- Route added: `/notifications/detail`. `flutter analyze` clean; `flutter build web` OK; tests pass.
+- **Wallet↔notification link stays Phase 4** (per user): "Cuzdana ekle" shows a "coming later"
+  toast; `is_transaction` badge renders but no amount/category parsing yet.
 
 ## Next Task — new session (two tracks)
 
@@ -101,6 +127,18 @@ Phase 1.1 + Phase 1.2 (code) + UX polish are all committed, merged to main, and 
   the committed `web/` wasm+worker binaries — do NOT bump drift/sqlite3 without refreshing those files.
 
 **Deferred / backlog**
+- **APK distribution + auto-update (DECIDED, not yet implemented).** Chosen approach = "Option B":
+  CI builds a **signed** release APK on push/tag and publishes it to **GitHub Releases**; the app
+  checks the GitHub Releases API on launch and offers one-tap download/install of a newer version.
+  Free, no Firebase (stays on GitHub+Supabase), and handles native changes (full APK reinstall).
+  Prereq: a **fixed keystore stored as a GitHub secret** so every build is signed with the same key
+  (Android rejects updates signed by a different key). Note: pure-OTA tools (e.g. Shorebird) only
+  push Dart/UI changes — native changes (Phase 2B Kotlin listener, new permissions/plugins) always
+  need a full APK, so Shorebird could be layered on later for fast Dart fixes but is not the base.
+  USB is only ever needed for live `flutter run` debugging, not for installs.
+  **Timing:** implement after the full super app is feature-complete (or re-discuss then).
+  Meanwhile: Wallet is already live on web (add-to-home-screen, always current); the APK mainly
+  matters for the Android-only Notification Archiver.
 - Custom domain: migrate host (Cloudflare Pages `personalhub.pages.dev`) or buy cheap domain for a nicer URL
 - Update GitHub Actions to Node 24-compatible versions (deprecation warning, deadline 2026-06-16)
 
@@ -127,6 +165,7 @@ Phase 1.1 + Phase 1.2 (code) + UX polish are all committed, merged to main, and 
 | 2026-06-06 | Repo made PUBLIC | GitHub Pages free only on public repos; secret scan clean (only Supabase anon key, public-safe). Live: famil-dapti.github.io/personalhub |
 | 2026-06-06 | Keep Supabase (not Firebase) | Backend works; hosting is a separate layer; FCM can be added later for APK push |
 | 2026-06-06 | Custom domain deferred | GitHub gives no domain; nice free name needs host migration (pages.dev) or cheap domain. Stay on github.io for now |
+| 2026-06-06 | APK dist = GitHub Releases + in-app update check (Option B), deferred to end | Free, no Firebase, handles native changes; needs fixed CI keystore. Implement after super app feature-complete |
 
 ## Git Workflow
 - Always work on `dev` branch

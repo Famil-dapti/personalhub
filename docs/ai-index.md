@@ -1,6 +1,6 @@
 # ai-index.md — Codebase Map
 
-Last updated: 2026-06-06
+Last updated: 2026-06-06 (Phase 2A — Notification Archiver UI + data layer)
 
 ## Project Root
 
@@ -45,10 +45,20 @@ Last updated: 2026-06-06
 | `lib/features/wallet/presentation/widgets/category_visuals.dart` | Icon-name->IconData map + hex->Color helpers |
 | `lib/core/utils/formatters.dart` | formatMoney / formatSignedMoney / formatDate (tr_TR) |
 
-### notifications (Phase 2 — not yet built)
+### notifications (Phase 2A — archive UI + data built; 2B native capture pending)
 | Path | Purpose |
 |---|---|
-| `lib/features/notifications/presentation/screens/notifications_screen.dart` | Placeholder |
+| `lib/features/notifications/data/models/notification_model.dart` | NotificationItem domain model (immutable; toInsert for capture) |
+| `lib/features/notifications/presentation/providers/notifications_provider.dart` | notificationsProvider (Drift stream) + search/filter/selected providers + NotificationsController.ingest (capture write path) |
+| `lib/features/notifications/presentation/screens/notifications_screen.dart` | Responsive archive: phone list / desktop master-detail; shared NotificationDetailBody |
+| `lib/features/notifications/presentation/screens/notification_detail_screen.dart` | Pushed phone detail (reads selectedNotificationProvider) |
+| `lib/features/notifications/presentation/widgets/notification_card.dart` | Archive row (brand avatar, header, title/body, transaction badge) |
+| `lib/features/notifications/presentation/widgets/search_field.dart` | Pill search bound to notificationSearchProvider |
+| `lib/features/notifications/presentation/widgets/filter_chip_row.dart` | Tumu/Islemler/per-app filter chips |
+| `lib/features/notifications/presentation/widgets/detected_transaction_card.dart` | "Islem olarak algilandi" card (wallet link = Phase 4) |
+| `lib/features/notifications/presentation/widgets/raw_payload_block.dart` | Monospace "Ham veri" payload block |
+| `lib/features/notifications/presentation/widgets/capture_runs_on_phone_banner.dart` | Desktop/web read-only capture banner |
+| `lib/features/notifications/presentation/widgets/notification_visuals.dart` | Deterministic per-app brand color + AppBrandAvatar |
 
 ### media_cleaner (Phase 3 — not yet built)
 | Path | Purpose |
@@ -58,12 +68,12 @@ Last updated: 2026-06-06
 ### offline-first (Phase 1.2 — Drift local DB + sync engine)
 | Path | Purpose |
 |---|---|
-| `lib/core/db/tables.dart` | Drift tables: LocalTransactions, LocalCategories (+updatedAt/deletedAt), SyncOutbox, SyncState |
+| `lib/core/db/tables.dart` | Drift tables: LocalTransactions, LocalCategories (+updatedAt/deletedAt), LocalNotifications (immutable, append-only), SyncOutbox, SyncState |
 | `lib/core/db/app_database.dart` | AppDatabase: reactive watch* reads, atomic write+outbox, watermark + upsert helpers; cross-platform `driftDatabase()` open (web = relative wasm/worker URIs) |
 | `lib/core/db/app_database.g.dart` | Generated drift code (committed; CI does not run build_runner) |
 | `lib/core/db/mappers.dart` | Drift row -> domain model; Supabase JSON -> Drift companion |
 | `lib/core/db/database_provider.dart` | appDatabaseProvider (singleton AppDatabase) |
-| `lib/core/sync/sync_service.dart` | Push outbox (idempotent upsert / soft-delete) + delta pull by updated_at watermark; LWW = server clock |
+| `lib/core/sync/sync_service.dart` | Push outbox (idempotent upsert / soft-delete) + delta pull (transactions/categories by updated_at, notifications by created_at watermark); LWW = server clock |
 | `lib/core/sync/sync_providers.dart` | syncServiceProvider + syncBootstrapProvider (initial sync + connectivity_plus reconnect trigger) |
 
 ## Infrastructure
@@ -89,6 +99,7 @@ Last updated: 2026-06-06
 | `/wallet/categories` | ManageCategoriesScreen | Yes |
 | `/wallet/dashboard` | WalletDashboardScreen | Yes |
 | `/notifications` | NotificationsScreen (tab 1) | Yes |
+| `/notifications/detail` | NotificationDetailScreen | Yes |
 | `/media` | MediaCleanerScreen (tab 2) | Yes |
 
 ## Key Patterns

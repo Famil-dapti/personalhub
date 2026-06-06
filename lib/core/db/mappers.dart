@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:drift/drift.dart';
 
+import '../../features/notifications/data/models/notification_model.dart';
 import '../../features/wallet/data/models/category_model.dart';
 import '../../features/wallet/data/models/transaction_model.dart';
 import 'app_database.dart';
@@ -29,6 +32,19 @@ Category categoryToDomain(LocalCategory r) => Category(
       icon: r.icon,
       color: r.color,
       sortOrder: r.sortOrder,
+    );
+
+NotificationItem notificationToDomain(LocalNotification r) => NotificationItem(
+      id: r.id,
+      userId: r.userId,
+      appPackage: r.appPackage,
+      appName: r.appName,
+      title: r.title,
+      body: r.body,
+      postedAt: r.postedAt,
+      isTransaction: r.isTransaction,
+      rawJson: r.rawJson,
+      createdAt: r.createdAt,
     );
 
 // --- Supabase JSON -> Drift companion (delta pull / push echo) ------------
@@ -62,6 +78,25 @@ LocalCategoriesCompanion categoryCompanionFromRemote(Map<String, dynamic> j) {
     createdAt: Value(DateTime.parse(j['created_at'] as String)),
     updatedAt: Value(DateTime.parse(j['updated_at'] as String)),
     deletedAt: Value(_parseNullableDate(j['deleted_at'])),
+  );
+}
+
+// Supabase stores `raw_json` as jsonb (decoded to Map/List by the client);
+// Drift holds it as an encoded string, so re-encode on the way in.
+LocalNotificationsCompanion notificationCompanionFromRemote(
+    Map<String, dynamic> j) {
+  final raw = j['raw_json'];
+  return LocalNotificationsCompanion(
+    id: Value(j['id'] as String),
+    userId: Value(j['user_id'] as String),
+    appPackage: Value(j['app_package'] as String?),
+    appName: Value(j['app_name'] as String?),
+    title: Value(j['title'] as String?),
+    body: Value(j['body'] as String?),
+    postedAt: Value(_parseNullableDate(j['posted_at'])),
+    isTransaction: Value((j['is_transaction'] as bool?) ?? false),
+    rawJson: Value(raw == null ? null : jsonEncode(raw)),
+    createdAt: Value(DateTime.parse(j['created_at'] as String)),
   );
 }
 

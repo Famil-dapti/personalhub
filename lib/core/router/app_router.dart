@@ -10,6 +10,7 @@ import '../../features/wallet/presentation/screens/add_transaction_screen.dart';
 import '../../features/wallet/presentation/screens/manage_categories_screen.dart';
 import '../../features/wallet/presentation/screens/wallet_dashboard_screen.dart';
 import '../../features/notifications/presentation/screens/notifications_screen.dart';
+import '../../features/notifications/presentation/screens/notification_detail_screen.dart';
 import '../../features/media_cleaner/presentation/screens/media_cleaner_screen.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -67,6 +68,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/notifications',
                 builder: (context, state) => const NotificationsScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'detail',
+                    builder: (context, state) =>
+                        const NotificationDetailScreen(),
+                  ),
+                ],
               ),
             ],
           ),
