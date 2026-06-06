@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="tr" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PersonalHub — Medya (Telefon)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   PersonalHub — Material 3 design system (deep teal/green seed)
+   Shared across all 6 sets. Light default; [data-theme="dark"] overrides.
+   ============================================================ */
+
+/* ---- Color roles: LIGHT ---- */
+:root {
+  --primary:#0B6E4F;            --on-primary:#FFFFFF;
+  --primary-container:#9FF2CC;  --on-primary-container:#00210F;
+  --secondary:#4C6358;          --on-secondary:#FFFFFF;
+  --secondary-container:#CEE9DA;--on-secondary-container:#092017;
+  --tertiary:#3D6373;           --tertiary-container:#C0E9FB; --on-tertiary-container:#001E2B;
+
+  --surface:#F6FBF6;            --on-surface:#171D19;
+  --surface-dim:#D6DCD6;        --surface-bright:#F6FBF6;
+  --surface-container-lowest:#FFFFFF;
+  --surface-container-low:#F0F6F0;
+  --surface-container:#EAF1EB;
+  --surface-container-high:#E5EBE5;
+  --surface-container-highest:#DFE5E0;
+  --on-surface-variant:#404943;
+  --outline:#707972;            --outline-variant:#C0C9C0;
+
+  --error:#BA1A1A;              --on-error:#FFFFFF;
+  --error-container:#FFDAD6;    --on-error-container:#410002;
+
+  --income:#2E7D52;             --income-container:#CDEFD9;
+  --expense:#BA1A1A;
+
+  --scrim:rgba(0,0,0,.32);
+  --shadow:rgba(20,40,30,.16);
+  --elev1:0 1px 2px rgba(20,40,30,.10),0 1px 3px 1px rgba(20,40,30,.07);
+  --elev2:0 1px 2px rgba(20,40,30,.12),0 2px 6px 2px rgba(20,40,30,.09);
+  --elev3:0 4px 8px 3px rgba(20,40,30,.10),0 1px 3px rgba(20,40,30,.14);
+
+  /* canvas behind frames */
+  --canvas:#E7ECE8;
+  --canvas-line:#D3DAD4;
+}
+
+[data-theme="dark"] {
+  --primary:#73DBAE;            --on-primary:#003824;
+  --primary-container:#005138;  --on-primary-container:#8FF7CE;
+  --secondary:#B2CCBE;          --on-secondary:#1E352B;
+  --secondary-container:#344B40;--on-secondary-container:#CEE9DA;
+  --tertiary:#A4CDDF;           --tertiary-container:#244C5B; --on-tertiary-container:#C0E9FB;
+
+  --surface:#0F140F;            --on-surface:#DEE4DF;
+  --surface-dim:#0F140F;        --surface-bright:#353A35;
+  --surface-container-lowest:#0A0F0A;
+  --surface-container-low:#171D18;
+  --surface-container:#1B211C;
+  --surface-container-high:#252B26;
+  --surface-container-highest:#303631;
+  --on-surface-variant:#BFC9C0;
+  --outline:#8A938B;            --outline-variant:#404943;
+
+  --error:#FFB4AB;              --on-error:#690005;
+  --error-container:#93000A;    --on-error-container:#FFDAD6;
+
+  --income:#7CDBA6;             --income-container:#143D29;
+  --expense:#FFB4AB;
+
+  --scrim:rgba(0,0,0,.5);
+  --shadow:rgba(0,0,0,.5);
+  --elev1:0 1px 2px rgba(0,0,0,.3),0 1px 3px 1px rgba(0,0,0,.15);
+  --elev2:0 1px 2px rgba(0,0,0,.3),0 2px 6px 2px rgba(0,0,0,.15);
+  --elev3:0 4px 8px 3px rgba(0,0,0,.15),0 1px 3px rgba(0,0,0,.3);
+
+  --canvas:#0A0D0A;
+  --canvas-line:#1A201B;
+}
+
+/* ---- Reset ---- */
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:'Inter',system-ui,-apple-system,sans-serif;
+  background:var(--canvas);
+  color:var(--on-surface);
+  -webkit-font-smoothing:antialiased;
+  font-feature-settings:"cv05","ss01";
+  transition:background .35s ease,color .35s ease;
+}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+ul{list-style:none}
+
+/* ---- Material Symbols ---- */
+.ms{
+  font-family:'Material Symbols Rounded';
+  font-weight:normal;font-style:normal;line-height:1;
+  letter-spacing:normal;text-transform:none;white-space:nowrap;
+  direction:ltr;-webkit-font-smoothing:antialiased;
+  font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;
+  user-select:none;
+}
+.ms.fill{font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24}
+
+/* ---- Type roles (M3 / Inter) ---- */
+.display-s{font-size:34px;line-height:40px;font-weight:600;letter-spacing:-.01em}
+.headline-m{font-size:28px;line-height:34px;font-weight:600;letter-spacing:-.01em}
+.headline-s{font-size:24px;line-height:30px;font-weight:600;letter-spacing:-.005em}
+.title-l{font-size:20px;line-height:26px;font-weight:600}
+.title-m{font-size:16px;line-height:22px;font-weight:600}
+.title-s{font-size:14px;line-height:20px;font-weight:600}
+.label-l{font-size:14px;line-height:18px;font-weight:600;letter-spacing:.01em}
+.label-m{font-size:12px;line-height:16px;font-weight:600;letter-spacing:.04em}
+.body-l{font-size:16px;line-height:24px;font-weight:400}
+.body-m{font-size:14px;line-height:20px;font-weight:400}
+.body-s{font-size:12px;line-height:16px;font-weight:400}
+.tabular{font-variant-numeric:tabular-nums}
+
+/* ============================================================
+   Presentation chrome (gallery canvas + frames)
+   ============================================================ */
+.topbar{
+  position:sticky;top:0;z-index:50;
+  display:flex;align-items:center;gap:16px;
+  padding:14px 24px;
+  background:color-mix(in srgb,var(--canvas) 86%,transparent);
+  backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--canvas-line);
+}
+.topbar .brand{display:flex;align-items:center;gap:12px;margin-right:auto}
+.topbar .logo{
+  width:34px;height:34px;border-radius:9px;display:grid;place-items:center;
+  background:var(--primary);color:var(--on-primary);
+}
+.topbar .brand b{font-size:15px;font-weight:700;letter-spacing:-.01em}
+.topbar .brand span{display:block;font-size:12px;color:var(--on-surface-variant)}
+.theme-toggle{
+  display:flex;align-items:center;gap:8px;
+  background:var(--surface-container-high);color:var(--on-surface);
+  border:1px solid var(--outline-variant);
+  padding:8px 14px;border-radius:999px;font-size:13px;font-weight:600;
+  transition:background .2s;
+}
+.theme-toggle:hover{background:var(--surface-container-highest)}
+.theme-toggle .ms{font-size:18px;color:var(--primary)}
+
+.canvas{
+  padding:40px 24px 120px;
+  max-width:1480px;margin:0 auto;
+}
+.canvas-section{margin-top:48px}
+.canvas-section:first-child{margin-top:8px}
+.section-head{display:flex;align-items:baseline;gap:12px;margin-bottom:20px}
+.section-head h2{font-size:15px;font-weight:700;letter-spacing:.02em;text-transform:uppercase;color:var(--on-surface)}
+.section-head p{font-size:13px;color:var(--on-surface-variant)}
+.eyebrow{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--primary)}
+
+.frame-grid{display:flex;flex-wrap:wrap;gap:36px 32px;align-items:flex-start}
+.frame-wrap{display:flex;flex-direction:column;gap:12px}
+.frame-label{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--on-surface-variant);padding-left:2px}
+.frame-label .dot{width:7px;height:7px;border-radius:50%;background:var(--primary)}
+.frame-label .dot.warn{background:#E2A33B}
+.frame-label .dot.err{background:var(--error)}
+
+/* phone screen card (no bezel — just the surface) */
+.phone{
+  width:380px;height:800px;
+  background:var(--surface);
+  border-radius:32px;
+  border:1px solid var(--outline-variant);
+  box-shadow:var(--elev2);
+  overflow:hidden;position:relative;
+  display:flex;flex-direction:column;
+  transition:background .35s ease;
+}
+.phone.tall{height:824px}
+
+/* desktop screen card */
+.desktop{
+  width:1280px;max-width:100%;height:800px;
+  background:var(--surface);
+  border-radius:18px;border:1px solid var(--outline-variant);
+  box-shadow:var(--elev2);overflow:hidden;position:relative;display:flex;
+  transition:background .35s ease;
+}
+
+/* ============================================================
+   App chrome
+   ============================================================ */
+.status-bar{
+  height:36px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 20px;font-size:13px;font-weight:600;color:var(--on-surface);flex:none;
+}
+.status-bar .right{display:flex;gap:6px;align-items:center}
+.status-bar .ms{font-size:16px}
+
+.app-bar{
+  display:flex;align-items:center;gap:6px;padding:8px 8px 8px 16px;flex:none;
+}
+.app-bar .title{font-size:20px;font-weight:600;margin-right:auto;letter-spacing:-.01em}
+.icon-btn{
+  width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:var(--on-surface-variant);
+  transition:background .15s;
+}
+.icon-btn:hover{background:var(--surface-container-high)}
+.icon-btn .ms{font-size:24px}
+
+.bottom-nav{
+  flex:none;display:flex;background:var(--surface-container);border-top:1px solid var(--outline-variant);
+  padding:8px 8px 18px;
+}
+.nav-dest{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 0}
+.nav-dest .pill{
+  width:64px;height:32px;border-radius:999px;display:grid;place-items:center;transition:background .2s;
+}
+.nav-dest .ms{font-size:24px;color:var(--on-surface-variant)}
+.nav-dest .lbl{font-size:12px;font-weight:600;color:var(--on-surface-variant)}
+.nav-dest.active .pill{background:var(--primary-container)}
+.nav-dest.active .ms{color:var(--on-primary-container)}
+.nav-dest.active .lbl{color:var(--on-surface)}
+
+/* scroll body */
+.screen-body{flex:1;overflow-y:auto;overflow-x:hidden;position:relative}
+.screen-body::-webkit-scrollbar{width:0}
+.pad16{padding:16px}
+
+/* ============================================================
+   Components
+   ============================================================ */
+.card{background:var(--surface-container-low);border-radius:18px;padding:16px}
+.card.outlined{background:var(--surface);border:1px solid var(--outline-variant)}
+
+/* balance card */
+.balance-card{
+  background:linear-gradient(150deg,var(--primary) 0%,color-mix(in srgb,var(--primary) 78%,#063b2a) 100%);
+  color:var(--on-primary);border-radius:24px;padding:22px 22px 18px;box-shadow:var(--elev1);
+}
+[data-theme="dark"] .balance-card{
+  background:linear-gradient(150deg,var(--primary-container) 0%,color-mix(in srgb,var(--primary-container) 70%,#000) 100%);
+  color:var(--on-primary-container);
+}
+.balance-card .lbl{font-size:13px;font-weight:600;opacity:.85;letter-spacing:.02em}
+.balance-card .amt{font-size:34px;font-weight:700;letter-spacing:-.02em;margin-top:4px}
+.balance-card .row{display:flex;gap:12px;margin-top:18px}
+.balance-card .sum{
+  flex:1;background:color-mix(in srgb,#fff 16%,transparent);border-radius:14px;padding:10px 12px;
+}
+[data-theme="dark"] .balance-card .sum{background:color-mix(in srgb,#000 22%,transparent)}
+.balance-card .sum .cap{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;opacity:.9}
+.balance-card .sum .v{font-size:17px;font-weight:700;margin-top:3px}
+.balance-card .sum .ms{font-size:15px}
+
+/* day header */
+.day-head{font-size:13px;font-weight:700;color:var(--on-surface-variant);padding:18px 4px 8px;letter-spacing:.02em}
+
+/* transaction row */
+.txn{display:flex;align-items:center;gap:14px;padding:11px 8px;border-radius:14px;position:relative;background:var(--surface);transition:background .15s}
+.txn:hover{background:var(--surface-container-low)}
+.avatar{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;flex:none}
+.avatar .ms{font-size:22px}
+.txn .meta{flex:1;min-width:0}
+.txn .meta .t{font-size:15px;font-weight:600;color:var(--on-surface)}
+.txn .meta .s{font-size:13px;color:var(--on-surface-variant);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.txn .amt{font-size:16px;font-weight:700;white-space:nowrap}
+.amt.pos{color:var(--income)}
+.amt.neg{color:var(--expense)}
+
+/* swipe delete bg */
+.swipe-bg{position:absolute;inset:0;background:var(--error);border-radius:14px;display:flex;align-items:center;justify-content:flex-end;padding-right:20px;color:var(--on-error)}
+.swipe-bg .ms{font-size:24px}
+
+/* FAB */
+.fab{
+  position:absolute;right:16px;bottom:96px;z-index:20;
+  display:flex;align-items:center;gap:10px;height:56px;padding:0 20px;border-radius:18px;
+  background:var(--primary-container);color:var(--on-primary-container);box-shadow:var(--elev3);
+  font-size:15px;font-weight:600;transition:transform .12s,box-shadow .2s;
+}
+.fab:active{transform:scale(.96)}
+.fab .ms{font-size:22px}
+.fab.circle{padding:0;width:56px;justify-content:center}
+
+/* chips */
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{
+  display:inline-flex;align-items:center;gap:7px;height:36px;padding:0 14px 0 10px;border-radius:10px;
+  border:1px solid var(--outline-variant);background:var(--surface);color:var(--on-surface);
+  font-size:13px;font-weight:600;transition:.15s;
+}
+.chip .ms{font-size:18px}
+.chip.sel{background:var(--secondary-container);color:var(--on-secondary-container);border-color:transparent}
+.chip.filter{padding:0 12px}
+.chip.filter.sel{background:var(--primary-container);color:var(--on-primary-container)}
+
+/* segmented */
+.segmented{display:flex;background:var(--surface-container-high);border-radius:12px;padding:4px;gap:4px}
+.segmented button{flex:1;height:40px;border-radius:9px;font-size:14px;font-weight:600;color:var(--on-surface-variant);display:flex;align-items:center;justify-content:center;gap:6px;transition:.18s}
+.segmented button.sel{background:var(--surface);color:var(--on-surface);box-shadow:var(--elev1)}
+.segmented button.sel.exp{color:var(--expense)}
+.segmented button.sel.inc{color:var(--income)}
+
+/* text field */
+.field{position:relative;margin-top:16px}
+.field label{display:block;font-size:13px;font-weight:600;color:var(--on-surface-variant);margin-bottom:7px}
+.input{
+  width:100%;height:56px;border-radius:12px;background:var(--surface-container-low);
+  border:1px solid var(--outline-variant);padding:0 16px;font-size:16px;color:var(--on-surface);
+  display:flex;align-items:center;
+}
+.input.area{height:auto;min-height:80px;padding:14px 16px;align-items:flex-start}
+.input .suffix{margin-left:auto;color:var(--on-surface-variant);font-weight:600}
+.input.amount{font-size:24px;font-weight:700}
+.input.focus{border-color:var(--primary);border-width:2px;padding:0 15px}
+
+/* buttons */
+.btn{height:48px;padding:0 24px;border-radius:14px;font-size:15px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:.15s}
+.btn.filled{background:var(--primary);color:var(--on-primary)}
+.btn.filled:hover{box-shadow:var(--elev1);filter:brightness(1.05)}
+.btn.tonal{background:var(--secondary-container);color:var(--on-secondary-container)}
+.btn.text{background:none;color:var(--primary);height:44px;padding:0 14px}
+.btn.danger{background:var(--error);color:var(--on-error)}
+.btn.block{width:100%}
+.btn .ms{font-size:20px}
+.btn .spin{width:18px;height:18px;border:2.5px solid color-mix(in srgb,var(--on-primary) 40%,transparent);border-top-color:var(--on-primary);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* list section header */
+.list-head{font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--primary);padding:18px 4px 6px}
+
+/* category manage row */
+.cat-row{display:flex;align-items:center;gap:14px;padding:12px 8px}
+.cat-row .meta{flex:1}
+.cat-row .meta .t{font-size:15px;font-weight:600}
+.cat-row .meta .s{font-size:12px;color:var(--on-surface-variant);margin-top:1px}
+.preset-tag{font-size:11px;font-weight:600;color:var(--on-surface-variant);background:var(--surface-container-high);padding:3px 9px;border-radius:7px}
+
+/* skeleton */
+.skel{background:linear-gradient(90deg,var(--surface-container) 25%,var(--surface-container-high) 37%,var(--surface-container) 63%);background-size:400% 100%;animation:shimmer 1.4s ease infinite;border-radius:8px}
+@keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
+.skel-circle{border-radius:50%}
+.skel-row{display:flex;align-items:center;gap:14px;padding:12px 8px}
+
+/* empty / error states */
+.state-center{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px;gap:8px}
+.state-center .ico{width:84px;height:84px;border-radius:50%;display:grid;place-items:center;background:var(--surface-container-high);margin-bottom:8px}
+.state-center .ico .ms{font-size:42px;color:var(--outline)}
+.state-center .ico.err{background:var(--error-container)}
+.state-center .ico.err .ms{color:var(--on-error-container)}
+.state-center h3{font-size:18px;font-weight:600}
+.state-center p{font-size:14px;color:var(--on-surface-variant);max-width:240px;line-height:20px}
+
+/* snackbar */
+.snackbar{
+  position:absolute;left:16px;right:16px;bottom:84px;z-index:40;
+  display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:12px;
+  background:#2C322D;color:#EDF1EC;box-shadow:var(--elev3);font-size:14px;font-weight:500;
+  transform:translateY(140%);opacity:0;transition:transform .3s cubic-bezier(.2,.8,.2,1),opacity .3s;
+}
+[data-theme="dark"] .snackbar{background:#E5EBE5;color:#171D19}
+.snackbar.show{transform:translateY(0);opacity:1}
+.snackbar.err{background:var(--error-container);color:var(--on-error-container)}
+.snackbar .ms{font-size:20px}
+.snackbar .act{margin-left:auto;color:var(--primary);font-weight:700}
+[data-theme="dark"] .snackbar .act{color:var(--primary-container)}
+.snackbar.err .act{color:var(--on-error-container)}
+
+/* bottom sheet */
+.sheet-scrim{position:absolute;inset:0;background:var(--scrim);z-index:30;opacity:0;pointer-events:none;transition:opacity .25s}
+.sheet-scrim.show{opacity:1;pointer-events:auto}
+.sheet{
+  position:absolute;left:0;right:0;bottom:0;z-index:31;background:var(--surface-container-low);
+  border-radius:28px 28px 0 0;padding:12px 20px 24px;box-shadow:var(--elev3);
+  transform:translateY(100%);transition:transform .3s cubic-bezier(.2,.8,.2,1);max-height:88%;overflow-y:auto;
+}
+.sheet.show{transform:translateY(0)}
+.sheet .handle{width:36px;height:4px;border-radius:2px;background:var(--outline-variant);margin:0 auto 14px}
+
+/* dialog */
+.dialog-scrim{position:absolute;inset:0;background:var(--scrim);z-index:35;display:grid;place-items:center;padding:24px;opacity:0;pointer-events:none;transition:opacity .2s}
+.dialog-scrim.show{opacity:1;pointer-events:auto}
+.dialog{background:var(--surface-container-high);border-radius:24px;padding:24px;max-width:312px;width:100%;box-shadow:var(--elev3);transform:scale(.94);transition:transform .2s}
+.dialog-scrim.show .dialog{transform:scale(1)}
+.dialog h3{font-size:18px;font-weight:600;margin-bottom:10px}
+.dialog p{font-size:14px;color:var(--on-surface-variant);line-height:20px}
+.dialog .actions{display:flex;justify-content:flex-end;gap:8px;margin-top:22px}
+
+/* color/icon swatches */
+.swatches{display:flex;flex-wrap:wrap;gap:10px}
+.swatch{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;border:2px solid transparent;transition:.15s}
+.swatch.sel{border-color:var(--on-surface);box-shadow:0 0 0 2px var(--surface)}
+.swatch .ms{font-size:18px;color:#fff;opacity:0;transition:.15s}
+.swatch.sel .ms{opacity:1}
+
+/* divider */
+.divider{height:1px;background:var(--outline-variant);margin:4px 0}
+
+/* charts */
+.donut-wrap{display:flex;align-items:center;gap:20px}
+.legend{display:flex;flex-direction:column;gap:10px;flex:1}
+.legend .li{display:flex;align-items:center;gap:10px;font-size:13px}
+.legend .li .dot{width:11px;height:11px;border-radius:3px;flex:none}
+.legend .li .nm{flex:1;color:var(--on-surface)}
+.legend .li .vl{font-weight:700;color:var(--on-surface)}
+.bars{display:flex;align-items:flex-end;gap:14px;height:180px;padding-top:10px}
+.bar-group{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;height:100%}
+.bar-pair{display:flex;align-items:flex-end;gap:4px;flex:1;width:100%;justify-content:center}
+.bar{width:14px;border-radius:5px 5px 0 0;transition:height .6s cubic-bezier(.2,.8,.2,1)}
+.bar.inc{background:var(--income)}
+.bar.exp{background:var(--expense)}
+.bar-lbl{font-size:11px;color:var(--on-surface-variant);font-weight:600}
+
+/* badge */
+.txn-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;color:var(--primary);background:var(--primary-container);padding:2px 8px 2px 6px;border-radius:7px}
+[data-theme="dark"] .txn-badge{color:var(--on-primary-container)}
+.txn-badge .ms{font-size:13px}
+
+/* desktop rail */
+.rail{width:88px;flex:none;background:var(--surface-container);border-right:1px solid var(--outline-variant);display:flex;flex-direction:column;align-items:center;padding:16px 0;gap:4px}
+.rail .logo{width:44px;height:44px;border-radius:12px;background:var(--primary);color:var(--on-primary);display:grid;place-items:center;margin-bottom:18px}
+.rail-dest{width:100%;display:flex;flex-direction:column;align-items:center;gap:5px;padding:8px 0}
+.rail-dest .pill{width:56px;height:34px;border-radius:999px;display:grid;place-items:center;transition:background .2s}
+.rail-dest .ms{font-size:24px;color:var(--on-surface-variant)}
+.rail-dest .lbl{font-size:11px;font-weight:600;color:var(--on-surface-variant)}
+.rail-dest.active .pill{background:var(--secondary-container)}
+.rail-dest.active .ms{color:var(--on-secondary-container)}
+.rail-dest.active .lbl{color:var(--on-surface)}
+.rail .spacer{margin-top:auto}
+
+/* desktop panels */
+.dt-main{flex:1;display:flex;min-width:0}
+.dt-list{width:420px;flex:none;border-right:1px solid var(--outline-variant);display:flex;flex-direction:column;background:var(--surface)}
+.dt-detail{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--surface-container-low)}
+.dt-head{padding:20px 24px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--outline-variant)}
+.dt-head .title{font-size:22px;font-weight:600;margin-right:auto}
+.dt-scroll{flex:1;overflow-y:auto}
+.dt-scroll::-webkit-scrollbar{width:8px}
+.dt-scroll::-webkit-scrollbar-thumb{background:var(--outline-variant);border-radius:4px}
+.search{display:flex;align-items:center;gap:10px;height:48px;padding:0 16px;border-radius:999px;background:var(--surface-container-high);color:var(--on-surface-variant);font-size:14px}
+.search input{flex:1;background:none;border:none;outline:none;color:var(--on-surface);font-size:14px;font-family:inherit}
+.search .ms{font-size:20px}
+
+.banner{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:14px;background:var(--tertiary-container);color:var(--on-tertiary-container);font-size:13px;font-weight:500}
+.banner .ms{font-size:20px}
+
+/* stat cards */
+.stat{background:var(--surface-container-low);border-radius:18px;padding:18px 20px}
+.stat .k{font-size:13px;color:var(--on-surface-variant);font-weight:600}
+.stat .v{font-size:28px;font-weight:700;margin-top:6px;letter-spacing:-.01em}
+.stat .v.pos{color:var(--income)}
+.stat .v.neg{color:var(--expense)}
+
+/* media */
+.media-card{position:absolute;inset:0;border-radius:24px;overflow:hidden;box-shadow:var(--elev3);background:var(--surface-container-high)}
+.media-card img{width:100%;height:100%;object-fit:cover;display:block}
+.media-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.55),transparent 42%)}
+.media-meta{position:absolute;left:16px;right:16px;bottom:16px;color:#fff}
+.stamp{position:absolute;top:24px;padding:6px 16px;border:3px solid;border-radius:12px;font-size:24px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;opacity:0;transition:opacity .1s}
+.stamp.keep{right:20px;color:#5BD999;border-color:#5BD999;transform:rotate(12deg)}
+.stamp.del{left:20px;color:#FF6B6B;border-color:#FF6B6B;transform:rotate(-12deg)}
+
+/* progress */
+.linebar{height:6px;border-radius:3px;background:var(--surface-container-high);overflow:hidden}
+.linebar i{display:block;height:100%;background:var(--primary);border-radius:3px;transition:width .4s}
+
+/* utility */
+.row{display:flex;align-items:center}
+.between{justify-content:space-between}
+.gap8{gap:8px}.gap12{gap:12px}.gap16{gap:16px}
+.mt8{margin-top:8px}.mt16{margin-top:16px}.mt24{margin-top:24px}
+.muted{color:var(--on-surface-variant)}
+.grow{flex:1}
+.hidden{display:none!important}
+
+</style>
+<style>
+  .deck{position:relative;margin:8px 16px 0;height:466px}
+  .meter{display:flex;align-items:center;gap:10px;padding:10px 16px}
+  .meter .free{margin-left:auto;text-align:right}
+  .deck-actions{display:flex;align-items:center;justify-content:center;gap:24px;padding:14px 0}
+  .deck-actions .act-btn{width:60px;height:60px;border-radius:50%;display:grid;place-items:center;box-shadow:var(--elev2);transition:transform .12s}
+  .deck-actions .act-btn:active{transform:scale(.9)}
+  .act-btn.del{background:var(--error-container);color:var(--on-error-container)}
+  .act-btn.keep{background:var(--income-container);color:var(--income)}
+  .act-btn.undo{width:48px;height:48px;background:var(--surface-container-high);color:var(--on-surface-variant)}
+  .act-btn .ms{font-size:28px}
+  .vid-badge{position:absolute;top:14px;left:14px;display:flex;align-items:center;gap:5px;background:rgba(0,0,0,.6);color:#fff;font-size:12px;font-weight:600;padding:4px 9px;border-radius:8px;z-index:3}
+  .vid-badge .ms{font-size:15px}
+  .grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+  .grid .cell{position:relative;aspect-ratio:1;border-radius:12px;overflow:hidden}
+  .grid .cell img{width:100%;height:100%;object-fit:cover}
+  .grid .cell .x{position:absolute;top:4px;right:4px;width:24px;height:24px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;display:grid;place-items:center}
+  .grid .cell .x .ms{font-size:16px}
+  .grid .cell .sz{position:absolute;bottom:4px;left:4px;font-size:10px;font-weight:600;color:#fff;background:rgba(0,0,0,.5);padding:2px 5px;border-radius:5px}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="brand">
+    <div class="logo"><span class="ms fill">photo_library</span></div>
+    <div><b>PersonalHub — Medya</b><span>Telefon · kaydir-ayikla + toplu sil</span></div>
+  </div>
+  <button class="theme-toggle" onclick="toggleTheme()"><span class="ms" id="themeIcon">dark_mode</span><span id="themeLbl">Koyu tema</span></button>
+</div>
+
+<main class="canvas">
+  <section class="canvas-section">
+    <div class="section-head"><span class="eyebrow">Set 5 / 6</span><h2>Medya — Interaktif kaydirma destesi</h2><p>Saga kaydir = sakla · sola = sil · geri al. Veya alttaki butonlar.</p></div>
+    <div class="frame-grid">
+      <!-- swipe deck -->
+      <div class="frame-wrap">
+        <div class="frame-label"><span class="dot"></span> Kaydirma destesi — surukle</div>
+        <div class="phone tall" id="app">
+          <div class="status-bar"><span>9:41</span><span class="right"><span class="ms">signal_cellular_alt</span><span class="ms">wifi</span><span class="ms">battery_full</span></span></div>
+
+          <!-- DECK SCREEN -->
+          <div class="screen" data-screen="deck" style="flex:1;display:flex;flex-direction:column;min-height:0">
+            <div class="app-bar"><span class="title">Medya</span><button class="icon-btn" onclick="go('trash')" title="Cop"><span class="ms">delete_sweep</span><span id="trashCount" class="hidden"></span></button></div>
+            <!-- filter -->
+            <div style="padding:0 16px"><div class="segmented" id="filterSeg">
+              <button class="sel" onclick="setFilter('all',this)">Tumu</button>
+              <button onclick="setFilter('photo',this)">Fotograflar</button>
+              <button onclick="setFilter('video',this)">Videolar</button>
+            </div></div>
+            <!-- meter -->
+            <div class="meter">
+              <div><div class="body-s muted">Ilerleme</div><div class="title-s tabular" id="progress">0 / 0</div></div>
+              <div class="free"><div class="body-s muted">Bosaltilacak (tahmini)</div><div class="title-s tabular" style="color:var(--income)" id="freed">~0 MB</div></div>
+            </div>
+            <div style="padding:0 16px"><div class="linebar"><i id="progBar" style="width:0%"></i></div></div>
+            <!-- deck -->
+            <div class="deck" id="deck"></div>
+            <!-- actions -->
+            <div class="deck-actions">
+              <button class="act-btn del" onclick="decide('del')" title="Sil"><span class="ms">close</span></button>
+              <button class="act-btn undo" onclick="undo()" title="Geri al"><span class="ms">undo</span></button>
+              <button class="act-btn keep" onclick="decide('keep')" title="Sakla"><span class="ms">favorite</span></button>
+            </div>
+          </div>
+
+          <!-- TRASH SCREEN -->
+          <div class="screen hidden" data-screen="trash" style="flex:1;display:flex;flex-direction:column;min-height:0">
+            <div class="app-bar"><button class="icon-btn" onclick="go('deck')"><span class="ms">arrow_back</span></button><span class="title" style="font-size:18px">Cop kutusu</span></div>
+            <div class="screen-body pad16" id="trashBody"></div>
+            <div style="padding:12px 16px 22px;border-top:1px solid var(--outline-variant)">
+              <button class="btn danger block" id="delBtn" onclick="confirmWipe()"><span class="ms">delete_forever</span> <span id="delLbl">Sil</span></button>
+            </div>
+          </div>
+
+          <div class="bottom-nav">
+            <div class="nav-dest"><div class="pill"><span class="ms">account_balance_wallet</span></div><span class="lbl">Cuzdan</span></div>
+            <div class="nav-dest"><div class="pill"><span class="ms">notifications</span></div><span class="lbl">Bildirimler</span></div>
+            <div class="nav-dest active"><div class="pill"><span class="ms fill">photo_library</span></div><span class="lbl">Medya</span></div>
+          </div>
+          <div class="dialog-scrim" id="dlgScrim"></div>
+          <div class="snackbar" id="snack"><span class="ms">check_circle</span><span id="snackMsg">Tamam</span><span class="act" onclick="undo()">GERI AL</span></div>
+        </div>
+      </div>
+
+      <!-- stats -->
+      <div class="frame-wrap">
+        <div class="frame-label"><span class="dot"></span> Istatistik · bitti ozeti</div>
+        <div class="phone">
+          <div class="status-bar"><span>9:41</span><span class="right"><span class="ms">wifi</span><span class="ms">battery_full</span></span></div>
+          <div class="app-bar"><span class="title">Medya</span></div>
+          <div class="screen-body pad16">
+            <div class="balance-card"><div class="lbl">Bu oturumda bosaltilan</div><div class="amt tabular">1,24 GB</div>
+              <div class="row"><div class="sum"><div class="cap"><span class="ms">favorite</span> Saklanan</div><div class="v tabular">86</div></div><div class="sum"><div class="cap"><span class="ms">delete</span> Silinen</div><div class="v tabular">34</div></div></div>
+            </div>
+            <div class="list-head">Istatistik</div>
+            <div class="card"><div class="row between" style="padding:6px 0"><span class="body-m">Taranan</span><b class="tabular">540</b></div><div class="divider"></div><div class="row between" style="padding:6px 0"><span class="body-m">Fotograf</span><b class="tabular">472</b></div><div class="divider"></div><div class="row between" style="padding:6px 0"><span class="body-m">Video</span><b class="tabular">68</b></div></div>
+            <div class="state-center" style="height:auto;padding:32px 16px"><div class="ico"><span class="ms">task_alt</span></div><h3>Tebrikler!</h3><p>120 dosya incelendi. ~1,24 GB yer bosaldi.</p></div>
+          </div>
+          <div class="bottom-nav"><div class="nav-dest"><div class="pill"><span class="ms">account_balance_wallet</span></div><span class="lbl">Cuzdan</span></div><div class="nav-dest"><div class="pill"><span class="ms">notifications</span></div><span class="lbl">Bildirimler</span></div><div class="nav-dest active"><div class="pill"><span class="ms fill">photo_library</span></div><span class="lbl">Medya</span></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="canvas-section">
+    <div class="section-head"><h2>Durumlar</h2><p>Taraniyor · bos · erisim yok</p></div>
+    <div class="frame-grid" id="states"></div>
+  </section>
+</main>
+
+<script>
+/* Media Cleaner seed — shared by Medya phone & desktop. Images via picsum seeds. */
+const MEDIA = [
+  {id:1, seed:'baku1',  type:'photo', size:2.4, date:'12 May 2025', place:'Icherisheher'},
+  {id:2, seed:'food2',  type:'photo', size:1.8, date:'12 May 2025', place:'Wolt siparis'},
+  {id:3, seed:'sea3',   type:'video', size:48.0,date:'10 May 2025', place:'Bulvar', dur:'0:42'},
+  {id:4, seed:'cat4',   type:'photo', size:3.1, date:'9 May 2025',  place:'Ev'},
+  {id:5, seed:'doc5',   type:'photo', size:0.9, date:'8 May 2025',  place:'Ekran goruntusu'},
+  {id:6, seed:'road6',  type:'photo', size:2.7, date:'7 May 2025',  place:'Yol'},
+  {id:7, seed:'party7', type:'video', size:96.0,date:'5 May 2025',  place:'Dogum gunu', dur:'1:18'},
+  {id:8, seed:'plant8', type:'photo', size:2.0, date:'4 May 2025',  place:'Balkon'},
+  {id:9, seed:'cafe9',  type:'photo', size:1.6, date:'3 May 2025',  place:'Kafe'},
+  {id:10,seed:'night10',type:'photo', size:3.4, date:'1 May 2025',  place:'Gece'},
+];
+function mediaUrl(seed,w,h){return `https://picsum.photos/seed/${seed}/${w}/${h}`;}
+
+</script>
+<script>
+function toggleTheme(){const h=document.documentElement,d=h.getAttribute('data-theme')==='dark';h.setAttribute('data-theme',d?'light':'dark');themeIcon.textContent=d?'dark_mode':'light_mode';themeLbl.textContent=d?'Koyu tema':'Acik tema';localStorage.setItem('ph-theme',d?'light':'dark');}
+(function(){if(localStorage.getItem('ph-theme')==='dark'){document.documentElement.setAttribute('data-theme','dark');themeIcon.textContent='light_mode';themeLbl.textContent='Acik tema';}})();
+
+let filter='all';
+let queue=MEDIA.slice();
+let idx=0;          // current position into filtered list
+let history=[];     // {item, action}
+let trash=[];       // items marked del
+
+function filtered(){return MEDIA.filter(m=>filter==='all'?true:m.type===(m.type==='video'?'video':'photo')&&(filter==='photo'?m.type==='photo':filter==='video'?m.type==='video':true));}
+function flist(){return MEDIA.filter(m=>filter==='all'?true:(filter==='photo'?m.type==='photo':m.type==='video'));}
+function fmtSize(mb){return mb>=1024?(mb/1024).toFixed(2).replace('.',',')+' GB':Math.round(mb)+' MB';}
+
+function setFilter(f,el){filter=f;idx=0;history=[];filterSeg.querySelectorAll('button').forEach(b=>b.classList.remove('sel'));el.classList.add('sel');renderDeck();}
+
+function renderDeck(){
+  const list=flist();
+  deck.innerHTML='';
+  // render up to 3 stacked, top = list[idx]
+  for(let k=Math.min(idx+2,list.length-1);k>=idx;k--){
+    const m=list[k];if(!m)continue;
+    const depth=k-idx;
+    const card=document.createElement('div');
+    card.className='media-card';
+    card.style.transform=`scale(${1-depth*0.04}) translateY(${depth*10}px)`;
+    card.style.zIndex=10-depth;
+    card.dataset.id=m.id;
+    card.innerHTML=`
+      ${m.type==='video'?`<div class="vid-badge"><span class="ms">videocam</span> ${m.dur}</div>`:''}
+      <img src="${mediaUrl(m.seed,760,1000)}" alt="" draggable="false">
+      <div class="media-overlay"></div>
+      <div class="stamp keep">SAKLA</div>
+      <div class="stamp del">SIL</div>
+      <div class="media-meta"><div class="title-m">${m.place}</div><div class="body-s" style="opacity:.85">${m.date} · ${fmtSize(m.size)} · ${m.type==='video'?'Video':'Fotograf'}</div></div>`;
+    deck.appendChild(card);
+    if(depth===0)bindDrag(card);
+  }
+  if(idx>=list.length){
+    deck.innerHTML=`<div class="state-center" style="height:100%"><div class="ico"><span class="ms">check_circle</span></div><h3>Tumu incelendi</h3><p>Bu filtrede inceleyecek baska medya yok.</p></div>`;
+  }
+  updateMeter();
+}
+function updateMeter(){
+  const list=flist();
+  progress.textContent=`${Math.min(idx,list.length)} / ${list.length}`;
+  progBar.style.width=(list.length?Math.min(idx/list.length*100,100):0)+'%';
+  const freedMB=trash.reduce((s,m)=>s+m.size,0);
+  freed.textContent='~'+fmtSize(freedMB);
+  trashCount.textContent=trash.length;
+}
+
+function bindDrag(card){
+  let sx=0,sy=0,dx=0,dy=0,drag=false;
+  const keep=card.querySelector('.stamp.keep'),del=card.querySelector('.stamp.del');
+  const down=e=>{drag=true;const p=e.touches?e.touches[0]:e;sx=p.clientX;sy=p.clientY;card.style.transition='none';card.setPointerCapture&&card.setPointerCapture(e.pointerId);};
+  const move=e=>{if(!drag)return;const p=e.touches?e.touches[0]:e;dx=p.clientX-sx;dy=p.clientY-sy;card.style.transform=`translate(${dx}px,${dy}px) rotate(${dx*0.05}deg)`;keep.style.opacity=Math.max(0,dx/90);del.style.opacity=Math.max(0,-dx/90);};
+  const up=()=>{if(!drag)return;drag=false;card.style.transition='transform .3s';if(dx>100){fly('keep',dx);}else if(dx<-100){fly('del',dx);}else{card.style.transform='';keep.style.opacity=del.style.opacity=0;}dx=dy=0;};
+  card.addEventListener('pointerdown',down);card.addEventListener('pointermove',move);card.addEventListener('pointerup',up);card.addEventListener('pointercancel',up);
+}
+function fly(action,dir){
+  const top=deck.querySelector('.media-card');if(!top)return;
+  top.style.transform=`translate(${dir>0?600:-600}px,40px) rotate(${dir>0?30:-30}deg)`;top.style.opacity='0';
+  setTimeout(()=>commit(action),180);
+}
+function decide(action){
+  const list=flist();if(idx>=list.length)return;
+  const top=deck.querySelector('.media-card');
+  if(top){top.style.transition='transform .3s,opacity .3s';top.style.transform=`translate(${action==='keep'?600:-600}px,40px) rotate(${action==='keep'?30:-30}deg)`;top.style.opacity='0';}
+  setTimeout(()=>commit(action),180);
+}
+function commit(action){
+  const list=flist();const m=list[idx];if(!m)return;
+  history.push({item:m,action});
+  if(action==='del'){trash.push(m);toast(`${m.type==='video'?'Video':'Fotograf'} cop kutusuna eklendi`);}
+  idx++;renderDeck();
+}
+function undo(){
+  if(!history.length)return;
+  const last=history.pop();idx=Math.max(0,idx-1);
+  if(last.action==='del')trash=trash.filter(t=>t.id!==last.item.id);
+  snack.classList.remove('show');renderDeck();
+}
+function go(s){document.querySelectorAll('#app .screen').forEach(el=>el.classList.toggle('hidden',el.dataset.screen!==s));if(s==='trash')renderTrash();}
+
+function renderTrash(){
+  if(!trash.length){trashBody.innerHTML=`<div class="state-center"><div class="ico"><span class="ms">delete</span></div><h3>Cop kutusu bos</h3><p>Silmek icin medyayi sola kaydirin.</p></div>`;delBtn.classList.add('hidden');return;}
+  delBtn.classList.remove('hidden');
+  const totMB=trash.reduce((s,m)=>s+m.size,0);
+  delLbl.textContent=`${trash.length} dosyayi sil · ${fmtSize(totMB)}`;
+  trashBody.innerHTML=`<div class="card" style="margin-bottom:14px;background:var(--error-container);color:var(--on-error-container)"><div class="row gap8"><span class="ms">warning</span><span class="body-m"><b>${trash.length} dosya</b> kalici olarak silinecek (~${fmtSize(totMB)}). Bu islem geri alinamaz.</span></div></div>
+    <div class="grid">${trash.map(m=>`<div class="cell"><img src="${mediaUrl(m.seed,300,300)}"><div class="x" onclick="unTrash(${m.id})"><span class="ms">close</span></div><div class="sz">${fmtSize(m.size)}</div>${m.type==='video'?'<div class="vid-badge" style="top:4px;left:4px;padding:2px 5px"><span class="ms">videocam</span></div>':''}</div>`).join('')}</div>
+    <div style="height:80px"></div>`;
+}
+function unTrash(id){trash=trash.filter(t=>t.id!==id);renderTrash();updateMeter();}
+function confirmWipe(){
+  const totMB=trash.reduce((s,m)=>s+m.size,0),n=trash.length;
+  dlgScrim.innerHTML=`<div class="dialog"><h3>${n} dosyayi sil?</h3><p>~${fmtSize(totMB)} yer bosalacak. Bu islem geri alinamaz.</p><div class="actions"><button class="btn text" onclick="dlgScrim.classList.remove('show')">Vazgec</button><button class="btn danger" onclick="doWipe()">Sil</button></div></div>`;
+  dlgScrim.classList.add('show');
+}
+function doWipe(){const n=trash.length,mb=trash.reduce((s,m)=>s+m.size,0);trash=[];dlgScrim.classList.remove('show');renderTrash();updateMeter();toast(`${n} dosya silindi, ~${fmtSize(mb)} bosaldi`);}
+
+let st;function toast(m){snackMsg.textContent=m;snack.classList.add('show');clearTimeout(st);st=setTimeout(()=>snack.classList.remove('show'),2800);}
+
+renderDeck();
+
+// states
+function nav(){return `<div class="bottom-nav"><div class="nav-dest"><div class="pill"><span class="ms">account_balance_wallet</span></div><span class="lbl">Cuzdan</span></div><div class="nav-dest"><div class="pill"><span class="ms">notifications</span></div><span class="lbl">Bildirimler</span></div><div class="nav-dest active"><div class="pill"><span class="ms fill">photo_library</span></div><span class="lbl">Medya</span></div></div>`;}
+document.getElementById('states').innerHTML=`
+<div class="frame-wrap"><div class="frame-label"><span class="dot"></span> Taraniyor</div><div class="phone"><div class="status-bar"><span>9:41</span><span class="right"><span class="ms">wifi</span><span class="ms">battery_full</span></span></div><div class="app-bar"><span class="title">Medya</span></div><div class="screen-body" style="display:flex;flex-direction:column"><div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:32px"><div style="width:84px;height:84px;border-radius:50%;border:4px solid var(--surface-container-high);border-top-color:var(--primary);animation:spin 1s linear infinite"></div><h3 class="title-l">Medya taraniyor</h3><p class="body-m muted" style="text-align:center">312 / 540 dosya tarandi</p><div class="linebar" style="width:200px"><i style="width:58%"></i></div></div></div>${nav()}</div></div>
+<div class="frame-wrap"><div class="frame-label"><span class="dot warn"></span> Bos</div><div class="phone"><div class="status-bar"><span>9:41</span><span class="right"><span class="ms">wifi</span><span class="ms">battery_full</span></span></div><div class="app-bar"><span class="title">Medya</span></div><div class="screen-body"><div class="state-center"><div class="ico"><span class="ms">photo_library</span></div><h3>Taranacak medya yok</h3><p>Cihazinizda inceleyecek yeni fotograf veya video bulunamadi.</p></div></div>${nav()}</div></div>
+<div class="frame-wrap"><div class="frame-label"><span class="dot err"></span> Erisim yok</div><div class="phone"><div class="status-bar"><span>9:41</span><span class="right"><span class="ms">wifi</span><span class="ms">battery_full</span></span></div><div class="app-bar"><span class="title">Medya</span></div><div class="screen-body"><div class="state-center"><div class="ico err"><span class="ms">no_photography</span></div><h3>Medya erisimi yok</h3><p>Fotograf ve videolari taramak icin galeri iznini verin.</p><button class="btn filled mt16"><span class="ms">settings</span> Izin ver</button></div></div>${nav()}</div></div>`;
+</script>
+</body>
+</html>
